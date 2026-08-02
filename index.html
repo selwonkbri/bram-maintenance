@@ -78,7 +78,8 @@ input[type=search]:focus,.chip:focus-visible,.seg button:focus-visible,.reload:f
 .sect > h2 span{font-family:var(--mono);font-size:11px;color:var(--faint);letter-spacing:.1em}
 .sect > p{font-size:12.5px;color:var(--mid);margin:0 0 12px;max-width:70ch}
 .rows{border-top:1px solid var(--rule)}
-.row{display:grid;grid-template-columns:14px 1fr 150px 118px;gap:14px;align-items:start;padding:11px 4px;border-bottom:1px solid var(--rule);background:var(--surface)}
+.row{display:grid;grid-template-columns:14px 1fr 132px 104px 78px;gap:12px;align-items:start;padding:11px 4px;border-bottom:1px solid var(--rule);background:var(--surface)}
+.act{padding-top:3px;text-align:right}
 .row:hover{background:#fff}
 .bar{width:5px;height:100%;min-height:36px;border-radius:1px;margin-left:6px}
 .t-name{font-size:14.5px;font-weight:500;line-height:1.35}
@@ -106,6 +107,31 @@ input[type=search]:focus,.chip:focus-visible,.seg button:focus-visible,.reload:f
 .state code{font-family:var(--mono);font-size:12.5px;background:var(--surface-2);padding:1px 5px;border-radius:2px}
 .skel{height:11px;background:var(--surface-2);border-radius:2px;margin:9px 0;max-width:520px}
 
+.logbtn{font:inherit;font-family:var(--mono);font-size:10px;letter-spacing:.11em;text-transform:uppercase;background:var(--surface);border:1px solid var(--rule);border-radius:2px;padding:5px 9px;cursor:pointer;color:var(--mid);white-space:nowrap}
+.logbtn:hover{background:var(--ink);color:#F3F4F0;border-color:var(--ink)}
+.logbtn:disabled{opacity:.45;cursor:default}
+.logbtn.done{background:var(--green);color:#F3F4F0;border-color:var(--green)}
+
+.scrim{position:fixed;inset:0;background:rgba(26,31,38,.55);display:flex;align-items:center;justify-content:center;padding:20px;z-index:50}
+.modal{background:var(--surface);border:1px solid var(--rule);border-radius:3px;max-width:460px;width:100%;padding:22px 24px;max-height:90vh;overflow:auto}
+.modal h2{font-family:var(--disp);text-transform:uppercase;letter-spacing:.04em;font-size:22px;margin:0 0 4px}
+.modal .who{color:var(--mid);font-size:13px;margin:0 0 16px}
+.field{margin-bottom:13px}
+.field label{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--faint);margin-bottom:4px}
+.field .val{font-size:14px}
+.field input{font:inherit;font-size:15px;font-family:var(--mono);width:100%;padding:8px 10px;border:1px solid var(--rule);border-radius:2px;background:#fff}
+.field input:focus{outline:2px solid var(--ink);outline-offset:1px}
+.field .hint{font-size:11.5px;color:var(--faint);margin-top:5px}
+.field.req label:after{content:" required";color:var(--red);letter-spacing:.08em}
+.modal .err{background:#FBEFEF;border:1px solid #E0BDBD;border-left:3px solid var(--red);border-radius:2px;padding:10px 12px;font-size:13px;color:#6B2020;margin-bottom:13px}
+.modal .acts{display:flex;gap:9px;margin-top:18px}
+.modal .acts button{font:inherit;font-size:13.5px;padding:9px 16px;border-radius:2px;cursor:pointer;border:1px solid var(--rule);background:var(--surface);color:var(--mid)}
+.modal .acts .go{background:var(--ink);color:#F3F4F0;border-color:var(--ink);font-weight:500}
+.modal .acts button:disabled{opacity:.5;cursor:default}
+
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:var(--ink);color:#F3F4F0;padding:11px 18px;border-radius:3px;font-size:13.5px;z-index:60;max-width:90vw;box-shadow:0 6px 20px rgba(0,0,0,.28)}
+.toast a{color:#F3F4F0;text-decoration:underline}
+
 footer{margin-top:36px;padding-top:16px;border-top:1px solid var(--rule);font-size:12px;color:var(--faint);line-height:1.7}
 footer b{color:var(--mid);font-weight:600}
 
@@ -115,6 +141,7 @@ footer b{color:var(--mid);font-weight:600}
   .gauge{grid-column:2;padding-top:2px}
   .stat{grid-column:2;text-align:left;display:flex;gap:8px;align-items:baseline}
   .stat .l{margin-top:0}
+  .act{grid-column:2;text-align:left;padding-top:6px}
   .odo span{font-size:22px}
 }
 @media (prefers-reduced-motion:no-preference){
@@ -158,6 +185,13 @@ const BLURB={
  "Checklist":"Every trip, before or after storage, or as needed. These have no due date and are never overdue. They are habits, not timers."
 };
 let DATA=null, veh="all", q="", activeStatus=null;
+
+// Tasks logged during this page session, so the row can show Logged immediately
+// without waiting for Notion's rollups to recompute.
+const DONE=new Set();
+// An odometer typed once carries through the rest of the sitting, so a batch of
+// check-offs does not ask for the same number over and over.
+const SESSION_ODO={};
 
 function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 function fmt(d){
@@ -269,10 +303,15 @@ function rowHTML(t){
   const last=t.baselineOnly?"Clock started "+fmt(t.lastDone)+", no work done"
     :(t.lastDone?"Last done "+fmt(t.lastDone):"Never serviced");
   const name=t.url?'<a href="'+esc(t.url)+'" target="_blank" rel="noopener">'+esc(t.task)+'</a>':esc(t.task);
+  const justDone = DONE.has(t.id);
+  const btn = justDone
+    ? '<button class="logbtn done" disabled>Logged</button>'
+    : '<button class="logbtn" data-log="'+esc(t.id)+'">Log done</button>';
   return '<div class="row"><div class="bar" style="background:'+COLOR[t.status]+'"></div>'+
     '<div><div class="t-name">'+name+tags+'</div><div class="t-meta">'+
     esc(t.vehicleName)+' \u00b7 '+esc(t.category||"Uncategorised")+' \u00b7 '+esc(last)+'</div></div>'+
-    gaugeHTML(t)+'<div class="stat">'+statHTML(t)+'</div></div>';
+    gaugeHTML(t)+'<div class="stat">'+statHTML(t)+'</div>'+
+    '<div class="act">'+btn+'</div></div>';
 }
 
 function listHTML(){
@@ -322,6 +361,117 @@ function wire(){
     q=e.target.value.toLowerCase().trim(); render();
     const n=document.getElementById("q"); if(n){n.focus();n.setSelectionRange(n.value.length,n.value.length);}
   });
+  document.querySelectorAll("[data-log]").forEach(b=>b.addEventListener("click",()=>{
+    const t=DATA.tasks.find(x=>x.id===b.dataset.log);
+    if(t) openLog(t);
+  }));
+}
+
+/* ---------- check off ---------- */
+function toast(html, ms){
+  const old=document.querySelector(".toast"); if(old) old.remove();
+  const d=document.createElement("div");
+  d.className="toast"; d.innerHTML=html;
+  document.body.appendChild(d);
+  setTimeout(()=>d.remove(), ms||6000);
+}
+function closeModal(){
+  const s=document.querySelector(".scrim"); if(s) s.remove();
+  document.removeEventListener("keydown", escClose);
+}
+function escClose(e){ if(e.key==="Escape") closeModal(); }
+
+function openLog(t){
+  const v=DATA.vehicles[t.vehicleId]||{};
+  const carried=SESSION_ODO[t.vehicleId];
+  // A number typed earlier this session counts as fresh, so it satisfies the
+  // requirement even for a task that would otherwise demand one.
+  const mustAsk=t.odometerRequired && carried===undefined;
+  const prefill=carried!==undefined?carried:(v.odometer!=null?v.odometer:"");
+  const asks=t.odometerTier!=="none";
+
+  const age=v.odometerUpdated?fmt(v.odometerUpdated):"never recorded";
+  let hint;
+  if(!asks) hint="Not scheduled on mileage, so this is recorded for reference only.";
+  else if(carried!==undefined) hint="Carried from the reading you entered a moment ago.";
+  else if(mustAsk) hint="Stored reading is from "+age+", too old to reuse for a mileage-scheduled task.";
+  else hint="Stored reading from "+age+", recent enough to use as is.";
+
+  const scrim=document.createElement("div");
+  scrim.className="scrim";
+  scrim.innerHTML='<div class="modal" role="dialog" aria-modal="true" aria-label="Log completed work">'+
+    '<h2>Log this as done</h2>'+
+    '<p class="who">'+esc(t.task)+'</p>'+
+    '<div id="lerr"></div>'+
+    '<div class="field"><label>Vehicle</label><div class="val">'+esc(t.vehicleName)+'</div></div>'+
+    '<div class="field"><label>Date</label><div class="val">'+fmt(new Date().toISOString().slice(0,10))+'</div></div>'+
+    '<div class="field"><label>Performed by</label><div class="val">Self</div></div>'+
+    '<div class="field'+(mustAsk?" req":"")+'"><label>Odometer</label>'+
+      '<input id="lodo" type="text" inputmode="numeric" value="'+esc(prefill)+'" '+
+      (mustAsk?'placeholder="Enter current reading"':"")+'>'+
+      '<div class="hint">'+esc(hint)+'</div></div>'+
+    '<div class="field"><label>Note, optional</label><input id="lnote" type="text" placeholder="Anything worth recording"></div>'+
+    '<div class="acts"><button class="go" id="lgo">Write to Notion</button>'+
+    '<button id="lno">Cancel</button></div></div>';
+  document.body.appendChild(scrim);
+  document.addEventListener("keydown", escClose);
+  scrim.addEventListener("click",e=>{ if(e.target===scrim) closeModal(); });
+  document.getElementById("lno").addEventListener("click", closeModal);
+  const odoEl=document.getElementById("lodo");
+  odoEl.focus(); odoEl.setSelectionRange(odoEl.value.length, odoEl.value.length);
+  document.getElementById("lgo").addEventListener("click",()=>submitLog(t, mustAsk));
+  odoEl.addEventListener("keydown",e=>{ if(e.key==="Enter") submitLog(t, mustAsk); });
+}
+
+function showLogErr(msg){
+  const box=document.getElementById("lerr");
+  if(box) box.innerHTML='<div class="err">'+esc(msg)+'</div>';
+}
+
+async function submitLog(t, mustAsk){
+  const go=document.getElementById("lgo");
+  const raw=(document.getElementById("lodo").value||"").replace(/[,\s]/g,"");
+  const note=document.getElementById("lnote").value||"";
+
+  if(mustAsk && raw===""){
+    showLogErr("This task is scheduled on mileage. Enter the current odometer to log it.");
+    return;
+  }
+  if(raw!=="" && !/^\d+$/.test(raw)){
+    showLogErr("Odometer should be digits only.");
+    return;
+  }
+
+  const v=DATA.vehicles[t.vehicleId]||{};
+  const typed=raw!=="" ? Number(raw) : null;
+  // Only send a number when the user actually supplied or changed one.
+  const changed=typed!==null && typed!==v.odometer;
+  const payload={taskId:t.id, odometer: (mustAsk||changed) ? typed : null, note:note};
+
+  go.disabled=true; go.textContent="Writing...";
+  try{
+    const r=await fetch("/api/log",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify(payload)
+    });
+    const j=await r.json();
+    if(!r.ok){
+      showLogErr(j.message||"Notion refused the write.");
+      go.disabled=false; go.textContent="Write to Notion";
+      return;
+    }
+    if(typed!==null) SESSION_ODO[t.vehicleId]=typed;
+    DONE.add(t.id);
+    closeModal();
+    const link=j.entryUrl?' <a href="'+esc(j.entryUrl)+'" target="_blank" rel="noopener">Open in Notion</a>':"";
+    const odoNote=j.vehicleOdometerUpdated?" Odometer updated.":"";
+    toast("Logged "+esc(j.task)+"."+odoNote+link);
+    load();
+  }catch(e){
+    showLogErr("Could not reach the server. Check your connection and try again.");
+    go.disabled=false; go.textContent="Write to Notion";
+  }
 }
 
 function stamp(){

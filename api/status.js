@@ -1,6 +1,8 @@
 // Reads the three RV maintenance databases from Notion and returns one JSON payload.
 // The token never reaches the browser. It lives in the NOTION_TOKEN environment variable.
 
+import { odometerPolicy, odometerRequired, todayISO } from "../lib/policy.js";
+
 const NOTION = "https://api.notion.com/v1";
 const VERSION = "2025-09-03";
 
@@ -244,6 +246,7 @@ export default async function handler(req, res) {
       .sort((a, b) => String(b.date || "").localeCompare(String(a.date || "")));
 
     let blankStatus = 0;
+    const today = todayISO();
 
     const tasks = taskRows.map((t) => {
       const title = pick(t, ["Task"]) || "Untitled task";
@@ -267,6 +270,13 @@ export default async function handler(req, res) {
         typeof milesRem === "number" ? milesRem : null,
         logIds.length > 0
       );
+
+      const veh = vehicles[vehicleId];
+      const policy = odometerPolicy({
+        intervalMiles: typeof miles === "number" ? miles : null,
+        vehicleType: veh ? veh.type : null,
+      });
+      const mustAsk = odometerRequired(policy, veh ? veh.odometerUpdated : null, today);
 
       return {
         id: t.id,
@@ -295,6 +305,8 @@ export default async function handler(req, res) {
         baselineOnly,
         neverServiced: logIds.length === 0 || baselineOnly,
         shop: SHOP_PATTERNS.some((re) => re.test(title)),
+        odometerTier: policy.tier,
+        odometerRequired: mustAsk,
         elapsed: elapsedFraction(
           intervalType, months, miles,
           typeof daysRem === "number" ? daysRem : null,
