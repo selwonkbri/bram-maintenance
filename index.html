@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rig Maintenance Status</title>
+<meta name="theme-color" content="#E4E6E1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ground:#E4E6E1; --surface:#FBFBF9; --surface-2:#F1F2EE;
+  --ink:#1A1F26; --mid:#5A6470; --faint:#8A929B; --rule:#CCD0C9;
+  --red:#A81F26; --amber:#B9740A; --green:#3D6B52; --slate:#4A5A6B; --gray:#7E8580;
+  --disp:'Barlow Condensed',Impact,sans-serif;
+  --body:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--ground);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1080px;margin:0 auto;padding:28px 20px 80px}
+
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--mid);display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.live{display:inline-flex;align-items:center;gap:6px;color:var(--green)}
+.live .pip{width:7px;height:7px;border-radius:50%;background:var(--green)}
+h1{font-family:var(--disp);font-weight:700;font-size:clamp(38px,7vw,62px);line-height:.95;letter-spacing:.01em;text-transform:uppercase;margin:6px 0 4px}
+.sub{color:var(--mid);font-size:14px;max-width:62ch;margin:0 0 24px}
+.reload{font:inherit;font-size:11px;font-family:var(--mono);letter-spacing:.12em;text-transform:uppercase;background:none;border:1px solid var(--rule);border-radius:2px;padding:3px 9px;cursor:pointer;color:var(--mid)}
+.reload:hover{border-color:var(--faint);color:var(--ink)}
+
+.note{background:#FDF6E7;border:1px solid #E0CFA0;border-left:4px solid var(--amber);border-radius:3px;padding:13px 16px;margin-bottom:20px;font-size:13.5px;color:#5A4A22}
+
+.rigs{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:26px}
+.rig{background:var(--surface);border:1px solid var(--rule);border-radius:3px;padding:16px 18px 18px}
+.rig h2{font-family:var(--disp);font-weight:600;text-transform:uppercase;letter-spacing:.03em;font-size:24px;margin:0 0 2px}
+.rig .spec{font-size:12.5px;color:var(--mid);margin:0 0 14px;min-height:34px}
+.odo-label{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);display:block;margin-bottom:5px}
+.odo{display:flex;gap:2px}
+.odo span{font-family:var(--mono);font-weight:600;font-size:26px;line-height:1;background:var(--ink);color:#F3F4F0;padding:7px 6px;border-radius:2px;min-width:24px;text-align:center}
+.odo span.sep{background:none;color:var(--ink);padding:7px 1px;min-width:auto}
+.odo-note{font-size:11.5px;color:var(--faint);margin-top:8px}
+
+.rail-block{margin-bottom:22px}
+.rail{display:flex;height:12px;border-radius:2px;overflow:hidden;border:1px solid var(--rule)}
+.rail div{height:100%}
+.legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.chip{display:flex;align-items:baseline;gap:7px;background:var(--surface);border:1px solid var(--rule);border-radius:2px;padding:6px 11px;cursor:pointer;font:inherit;color:inherit}
+.chip:hover{background:#fff;border-color:var(--faint)}
+.chip[aria-pressed="true"]{background:var(--ink);color:#F3F4F0;border-color:var(--ink)}
+.chip b{font-family:var(--mono);font-size:15px;font-weight:600}
+.chip small{font-size:11px;letter-spacing:.09em;text-transform:uppercase;font-family:var(--mono)}
+.chip i{width:8px;height:8px;border-radius:1px;display:inline-block;align-self:center}
+
+.next{background:var(--surface);border:1px solid var(--rule);border-left:4px solid var(--red);border-radius:3px;padding:20px 22px;margin-bottom:30px}
+.next h2{font-family:var(--disp);text-transform:uppercase;letter-spacing:.04em;font-size:22px;margin:0 0 3px}
+.next .lede{color:var(--mid);font-size:13px;margin:0 0 16px}
+.grp{margin-bottom:15px}
+.grp:last-child{margin-bottom:0}
+.grp h3{font-family:var(--mono);font-size:10.5px;letter-spacing:.15em;text-transform:uppercase;color:var(--faint);margin:0 0 7px;padding-bottom:5px;border-bottom:1px solid var(--rule)}
+.grp ul{margin:0;padding:0;list-style:none}
+.grp li{padding:4px 0;font-size:14px;display:flex;gap:10px;align-items:baseline}
+.grp li .dot{flex:0 0 auto;width:7px;height:7px;border-radius:50%;margin-top:1px}
+.grp li em{font-style:normal;color:var(--mid);font-size:12.5px;font-family:var(--mono)}
+
+.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:14px}
+.seg{display:flex;border:1px solid var(--rule);border-radius:2px;overflow:hidden;background:var(--surface)}
+.seg button{font:inherit;font-size:13px;padding:7px 14px;border:0;background:none;cursor:pointer;color:var(--mid);border-right:1px solid var(--rule)}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--ink);color:#F3F4F0}
+input[type=search]{font:inherit;font-size:13px;padding:7px 11px;border:1px solid var(--rule);border-radius:2px;background:var(--surface);min-width:200px;flex:1}
+input[type=search]:focus,.chip:focus-visible,.seg button:focus-visible,.reload:focus-visible{outline:2px solid var(--ink);outline-offset:1px}
+.count{font-family:var(--mono);font-size:11.5px;color:var(--mid);letter-spacing:.06em}
+
+.sect{margin-bottom:26px}
+.sect > h2{font-family:var(--disp);text-transform:uppercase;font-size:20px;letter-spacing:.04em;margin:0 0 2px;display:flex;align-items:baseline;gap:10px}
+.sect > h2 span{font-family:var(--mono);font-size:11px;color:var(--faint);letter-spacing:.1em}
+.sect > p{font-size:12.5px;color:var(--mid);margin:0 0 12px;max-width:70ch}
+.rows{border-top:1px solid var(--rule)}
+.row{display:grid;grid-template-columns:14px 1fr 150px 118px;gap:14px;align-items:start;padding:11px 4px;border-bottom:1px solid var(--rule);background:var(--surface)}
+.row:hover{background:#fff}
+.bar{width:5px;height:100%;min-height:36px;border-radius:1px;margin-left:6px}
+.t-name{font-size:14.5px;font-weight:500;line-height:1.35}
+.t-name a{color:inherit;text-decoration:none;border-bottom:1px solid transparent}
+.t-name a:hover{border-bottom-color:var(--faint)}
+.t-meta{font-family:var(--mono);font-size:11px;color:var(--faint);letter-spacing:.05em;margin-top:3px;text-transform:uppercase}
+.tag{display:inline-block;font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;border:1px solid currentColor;border-radius:2px;padding:1px 4px;margin-left:6px;vertical-align:1px}
+.tag.crit{color:var(--red)}
+.tag.shop{color:var(--slate)}
+.tag.base{color:var(--gray)}
+.gauge{padding-top:4px}
+.gauge .track{height:6px;background:var(--surface-2);border:1px solid var(--rule);border-radius:1px;position:relative;overflow:hidden}
+.gauge .fill{height:100%;position:absolute;left:0;top:0}
+.gauge .tick{position:absolute;top:-3px;bottom:-3px;width:1px;background:var(--ink);opacity:.55}
+.gauge .cap{font-family:var(--mono);font-size:10px;color:var(--faint);letter-spacing:.06em;margin-top:4px;text-transform:uppercase}
+.stat{text-align:right}
+.stat .n{font-family:var(--mono);font-size:14px;font-weight:600;line-height:1.2}
+.stat .l{font-family:var(--mono);font-size:10px;color:var(--faint);letter-spacing:.08em;text-transform:uppercase;margin-top:2px}
+.empty{padding:26px 4px;color:var(--mid);font-size:13.5px;background:var(--surface);border-bottom:1px solid var(--rule)}
+
+.state{background:var(--surface);border:1px solid var(--rule);border-radius:3px;padding:30px 26px;text-align:left}
+.state.bad{border-left:4px solid var(--red)}
+.state h2{font-family:var(--disp);text-transform:uppercase;font-size:24px;letter-spacing:.04em;margin:0 0 8px}
+.state p{color:var(--mid);font-size:14px;margin:0 0 6px;max-width:64ch}
+.state code{font-family:var(--mono);font-size:12.5px;background:var(--surface-2);padding:1px 5px;border-radius:2px}
+.skel{height:11px;background:var(--surface-2);border-radius:2px;margin:9px 0;max-width:520px}
+
+footer{margin-top:36px;padding-top:16px;border-top:1px solid var(--rule);font-size:12px;color:var(--faint);line-height:1.7}
+footer b{color:var(--mid);font-weight:600}
+
+@media (max-width:760px){
+  .rigs{grid-template-columns:1fr}
+  .row{grid-template-columns:12px 1fr;gap:10px}
+  .gauge{grid-column:2;padding-top:2px}
+  .stat{grid-column:2;text-align:left;display:flex;gap:8px;align-items:baseline}
+  .stat .l{margin-top:0}
+  .odo span{font-size:22px}
+}
+@media (prefers-reduced-motion:no-preference){
+  .row{transition:background .12s ease}
+  .gauge .fill{transition:width .4s cubic-bezier(.2,.7,.3,1)}
+  .live .pip{animation:pulse 2.4s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow" id="asof">Reading Notion</p>
+  <h1>Rig maintenance status</h1>
+  <p class="sub">Live from the three Notion databases. Every load reads the current Status, days remaining, and miles remaining straight from the source, so this page cannot go stale.</p>
+  <div id="app">
+    <div class="state">
+      <h2>Loading</h2>
+      <p>Pulling tasks, service log, and odometers.</p>
+      <div class="skel" style="width:70%"></div>
+      <div class="skel" style="width:52%"></div>
+      <div class="skel" style="width:61%"></div>
+    </div>
+  </div>
+  <footer id="foot" hidden>
+    <b>How to read this.</b> Overdue and Due Soon come from the Status formula in Notion: at or below zero days or miles is overdue, within 30 days or 1,000 miles is due soon.<br>
+    <b>The baseline.</b> Items marked BASELINE have never actually been serviced. The trailer arrived with no service history, so a clock-start entry dated 2025-07-15 gives every interval something to measure from. It is not a record of work performed.<br>
+    <b>Trailer mileage is an estimate</b> of towed miles starting from zero, so lean on the calendar triggers rather than the mileage ones on the trailer.<br>
+    <b>Generator items show as never logged on purpose.</b> The Champion 4000W was bought new and separately, so its clock does not start with the trailer.
+  </footer>
+</div>
+
+<script>
+const COLOR={"OVERDUE":"var(--red)","Due Soon":"var(--amber)","On Track":"var(--green)","Checklist":"var(--slate)","Never Logged":"var(--gray)"};
+const ORDER=["OVERDUE","Due Soon","On Track","Never Logged","Checklist"];
+const BLURB={
+ "OVERDUE":"Past the interval on days, miles, or both. The trailer carries a catch-up backlog from the clock-start baseline, so much of this is routine cleaning and lubrication rather than anything failing.",
+ "Due Soon":"Inside 30 days or 1,000 miles. Worth folding into the next trip or the next shop visit.",
+ "On Track":"Serviced recently enough that nothing is pending.",
+ "Never Logged":"No service entry exists yet, so there is nothing to measure an interval from.",
+ "Checklist":"Every trip, before or after storage, or as needed. These have no due date and are never overdue. They are habits, not timers."
+};
+let DATA=null, veh="all", q="", activeStatus=null;
+
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function fmt(d){
+  if(!d) return "not recorded";
+  const p=String(d).slice(0,10).split("-").map(Number);
+  if(p.length<3||isNaN(p[0])) return String(d);
+  return new Date(Date.UTC(p[0],p[1]-1,p[2])).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric",timeZone:"UTC"});
+}
+function num(n){return Number(n).toLocaleString("en-US");}
+
+function vehKey(t){
+  const n=(t.vehicleName||"").toLowerCase();
+  return n.includes("brinkley")?"trailer":n.includes("ram")?"truck":"other";
+}
+
+/* ---------- sections ---------- */
+function rigsHTML(){
+  const list=Object.values(DATA.vehicles);
+  if(!list.length) return "";
+  return '<div class="rigs">'+list.map(v=>{
+    const odo=v.odometer==null?"unknown":num(v.odometer);
+    const digits=odo.split("").map(c=>c===","?'<span class="sep">,</span>':'<span>'+esc(c)+'</span>').join("");
+    const mine=DATA.tasks.filter(t=>t.vehicleId===v.id);
+    const over=mine.filter(t=>t.status==="OVERDUE").length;
+    const soon=mine.filter(t=>t.status==="Due Soon").length;
+    return '<div class="rig"><h2>'+esc(v.name)+'</h2><p class="spec">'+
+      esc([v.year,v.model].filter(Boolean).join(" "))+'</p>'+
+      '<span class="odo-label">Odometer &middot; updated '+esc(fmt(v.odometerUpdated))+'</span>'+
+      '<div class="odo">'+digits+'</div>'+
+      '<p class="odo-note">'+mine.length+' tracked items &middot; '+over+' overdue &middot; '+soon+' due soon</p></div>';
+  }).join("")+'</div>';
+}
+
+function railHTML(){
+  const total=DATA.tasks.length||1;
+  const c={}; ORDER.forEach(s=>c[s]=DATA.tasks.filter(t=>t.status===s).length);
+  return '<div class="rail-block"><div class="rail">'+
+    ORDER.map(s=>'<div style="width:'+(c[s]/total*100)+'%;background:'+COLOR[s]+'"></div>').join("")+
+    '</div><div class="legend">'+ORDER.map(s=>
+      '<button class="chip" data-status="'+esc(s)+'" aria-pressed="'+(activeStatus===s)+'">'+
+      '<i style="background:'+COLOR[s]+'"></i><b>'+c[s]+'</b><small>'+esc(s)+'</small></button>').join("")+
+    '</div></div>';
+}
+
+function nextHTML(){
+  const crit=DATA.tasks.filter(t=>t.priority==="Critical"&&(t.status==="OVERDUE"||t.status==="Due Soon"))
+    .sort((a,b)=>(a.daysRemaining==null?9999:a.daysRemaining)-(b.daysRemaining==null?9999:b.daysRemaining));
+  const other=DATA.tasks.filter(t=>t.status==="OVERDUE"&&t.priority!=="Critical");
+  const shop=DATA.tasks.filter(t=>t.shop&&(t.status==="OVERDUE"||t.status==="Due Soon"));
+
+  if(!crit.length&&!other.length&&!shop.length){
+    return '<div class="next" style="border-left-color:var(--green)"><h2>Nothing pressing</h2>'+
+      '<p class="lede">No critical item is overdue or due soon, and the routine backlog is clear.</p></div>';
+  }
+
+  const dueTxt=t=>{
+    if(t.daysRemaining==null&&t.milesRemaining==null) return "no due figure";
+    const bits=[];
+    if(t.daysRemaining!=null) bits.push(t.daysRemaining<0?Math.abs(t.daysRemaining)+" days past":"due in "+t.daysRemaining+" days");
+    if(t.milesRemaining!=null&&t.intervalType==="Mileage or Time")
+      bits.push(t.milesRemaining>0?num(t.milesRemaining)+" mi still to run":num(Math.abs(t.milesRemaining))+" mi past");
+    return bits.join(" \u00b7 ");
+  };
+  const li=(t,color)=>'<li><span class="dot" style="background:'+color+'"></span><span>'+esc(t.task)+
+    ' <em>'+esc(t.vehicleName)+' \u00b7 '+esc(dueTxt(t))+'</em></span></li>';
+
+  const bucket=m=>m===1?"monthly":m===3?"quarterly":m===6?"twice yearly":m===12?"annual":"other";
+  const groups={};
+  other.forEach(t=>{const b=bucket(t.intervalMonths);(groups[b]=groups[b]||[]).push(t);});
+  const BORDER=["monthly","quarterly","twice yearly","annual","other"];
+  const clusters=BORDER.filter(b=>groups[b]).map(b=>{
+    const g=groups[b].sort((a,z)=>(a.daysRemaining||0)-(z.daysRemaining||0));
+    const cats=[...new Set(g.map(t=>t.category).filter(Boolean))];
+    const past=g[0].daysRemaining!=null?Math.abs(g[0].daysRemaining)+" days past":"overdue";
+    return '<li><span class="dot" style="background:var(--red)"></span><span>'+g.length+' '+b+
+      ' items, '+esc(past)+' <em>'+esc(cats.slice(0,3).join(", ").toLowerCase()+(cats.length>3?", and more":""))+'</em></span></li>';
+  }).join("");
+
+  let html='<div class="next"><h2>What needs attention</h2>'+
+    '<p class="lede">Critical items are named. Routine work is grouped, because the trailer is still working through the catch-up backlog.</p>';
+  if(crit.length) html+='<div class="grp"><h3>Critical</h3><ul>'+crit.map(t=>li(t,COLOR[t.status])).join("")+'</ul></div>';
+  if(clusters) html+='<div class="grp"><h3>Routine backlog</h3><ul>'+clusters+'</ul></div>';
+  if(shop.length) html+='<div class="grp"><h3>Wants a bay or a technician</h3><ul>'+shop.map(t=>li(t,"var(--slate)")).join("")+'</ul></div>';
+  return html+'</div>';
+}
+
+function gaugeHTML(t){
+  if(t.elapsed==null) return '<div class="gauge"><div class="track"></div><div class="cap">'+esc(t.intervalLabel)+'</div></div>';
+  const w=(Math.min(Math.max(t.elapsed,0),2)/2*100).toFixed(1);
+  return '<div class="gauge"><div class="track"><div class="fill" style="width:'+w+'%;background:'+COLOR[t.status]+'"></div>'+
+    '<div class="tick" style="left:50%"></div></div><div class="cap">'+esc(t.intervalLabel)+' \u00b7 '+Math.round(t.elapsed*100)+'%</div></div>';
+}
+function statHTML(t){
+  if(t.status==="Checklist") return '<div class="n" style="color:var(--slate)">'+esc(t.intervalType)+'</div><div class="l">No due date</div>';
+  if(t.status==="Never Logged") return '<div class="n" style="color:var(--gray)">Not logged</div><div class="l">No start point</div>';
+  const bits=[];
+  if(t.daysRemaining!=null) bits.push([t.daysRemaining,"days"]);
+  if(t.milesRemaining!=null) bits.push([t.milesRemaining,"miles"]);
+  if(!bits.length) return '<div class="n" style="color:var(--faint)">&mdash;</div><div class="l">No figure</div>';
+  bits.sort((a,b)=>a[0]-b[0]);
+  const say=b=>b[0]<0?num(Math.abs(b[0]))+" over":num(b[0])+" left";
+  return '<div class="n" style="color:'+COLOR[t.status]+'">'+say(bits[0])+'</div><div class="l">'+bits[0][1]+'</div>'+
+    (bits[1]?'<div class="l">'+say(bits[1])+" "+bits[1][1]+'</div>':"");
+}
+function rowHTML(t){
+  const tags=(t.priority==="Critical"?'<span class="tag crit">Critical</span>':"")+
+    (t.shop?'<span class="tag shop">Shop</span>':"")+
+    (t.baselineOnly?'<span class="tag base">Baseline</span>':"");
+  const last=t.baselineOnly?"Clock started "+fmt(t.lastDone)+", no work done"
+    :(t.lastDone?"Last done "+fmt(t.lastDone):"Never serviced");
+  const name=t.url?'<a href="'+esc(t.url)+'" target="_blank" rel="noopener">'+esc(t.task)+'</a>':esc(t.task);
+  return '<div class="row"><div class="bar" style="background:'+COLOR[t.status]+'"></div>'+
+    '<div><div class="t-name">'+name+tags+'</div><div class="t-meta">'+
+    esc(t.vehicleName)+' \u00b7 '+esc(t.category||"Uncategorised")+' \u00b7 '+esc(last)+'</div></div>'+
+    gaugeHTML(t)+'<div class="stat">'+statHTML(t)+'</div></div>';
+}
+
+function listHTML(){
+  const rows=DATA.tasks.filter(t=>
+    (veh==="all"||vehKey(t)===veh)&&
+    (!activeStatus||t.status===activeStatus)&&
+    (!q||(t.task+" "+(t.category||"")+" "+(t.source||"")).toLowerCase().includes(q)));
+  const body=ORDER.map(s=>{
+    const set=rows.filter(t=>t.status===s).sort((a,b)=>{
+      const pa=a.priority==="Critical"?0:1,pb=b.priority==="Critical"?0:1;
+      if(pa!==pb) return pa-pb;
+      return (a.daysRemaining==null?9999:a.daysRemaining)-(b.daysRemaining==null?9999:b.daysRemaining);
+    });
+    if(!set.length) return "";
+    return '<section class="sect"><h2>'+esc(s)+' <span>'+set.length+'</span></h2><p>'+BLURB[s]+'</p>'+
+      '<div class="rows">'+set.map(rowHTML).join("")+'</div></section>';
+  }).join("");
+  return '<div class="controls"><div class="seg" id="vehseg">'+
+    ['all','trailer','truck'].map(k=>'<button data-veh="'+k+'" aria-pressed="'+(veh===k)+'">'+
+      (k==="all"?"Both":k==="trailer"?"Trailer":"Truck")+'</button>').join("")+
+    '</div><input type="search" id="q" placeholder="Search tasks, categories" aria-label="Search tasks" value="'+esc(q)+'">'+
+    '<span class="count">'+rows.length+' of '+DATA.tasks.length+' items</span></div>'+
+    '<div id="list">'+(body||'<div class="empty">Nothing matches that filter. Clear the search or pick a different status.</div>')+'</div>';
+}
+
+function warnHTML(){
+  if(!DATA.warnings||!DATA.warnings.length) return "";
+  return DATA.warnings.map(w=>'<div class="note">'+esc(w)+'</div>').join("");
+}
+
+function render(){
+  document.getElementById("app").innerHTML=
+    warnHTML()+rigsHTML()+railHTML()+nextHTML()+listHTML();
+  document.getElementById("foot").hidden=false;
+  wire();
+}
+function wire(){
+  document.querySelectorAll(".chip").forEach(c=>c.addEventListener("click",()=>{
+    activeStatus=activeStatus===c.dataset.status?null:c.dataset.status; render();
+  }));
+  const seg=document.getElementById("vehseg");
+  if(seg) seg.addEventListener("click",e=>{
+    const b=e.target.closest("button"); if(!b) return; veh=b.dataset.veh; render();
+  });
+  const s=document.getElementById("q");
+  if(s) s.addEventListener("input",e=>{
+    q=e.target.value.toLowerCase().trim(); render();
+    const n=document.getElementById("q"); if(n){n.focus();n.setSelectionRange(n.value.length,n.value.length);}
+  });
+}
+
+function stamp(){
+  const t=new Date(DATA.generatedAt);
+  document.getElementById("asof").innerHTML=
+    '<span class="live"><span class="pip"></span>Live from Notion</span> \u00b7 read '+
+    t.toLocaleTimeString([], {hour:"numeric",minute:"2-digit"})+' \u00b7 '+DATA.tasks.length+
+    ' tracked items <button class="reload" id="rl">Refresh</button>';
+  const b=document.getElementById("rl"); if(b) b.addEventListener("click",load);
+}
+
+function fail(title, body, hint){
+  document.getElementById("asof").textContent="Not connected";
+  document.getElementById("app").innerHTML=
+    '<div class="state bad"><h2>'+esc(title)+'</h2><p>'+esc(body)+'</p>'+(hint?'<p>'+hint+'</p>':"")+
+    '<p><button class="reload" onclick="location.reload()">Try again</button></p></div>';
+}
+
+async function load(){
+  try{
+    const r=await fetch("/api/status",{cache:"no-store"});
+    const j=await r.json();
+    if(!r.ok){
+      if(j.error==="no_token"){
+        fail("Notion token not set yet",
+          j.message,
+          'In Vercel: Settings, Environment Variables, add <code>NOTION_TOKEN</code> with the integration secret, then redeploy.');
+      } else {
+        fail("Could not read Notion", j.message||"Notion did not answer.", null);
+      }
+      return;
+    }
+    DATA=j; stamp(); render();
+  }catch(e){
+    fail("No connection","The dashboard could not reach its own API. Check that you are online, then reload.",null);
+  }
+}
+load();
+</script>
+</body>
+</html>
