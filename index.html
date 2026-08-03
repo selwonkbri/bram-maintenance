@@ -99,6 +99,48 @@ input[type=search]:focus,.chip:focus-visible,.seg button:focus-visible,.reload:f
 .stat .l{font-family:var(--mono);font-size:10px;color:var(--faint);letter-spacing:.08em;text-transform:uppercase;margin-top:2px}
 .empty{padding:26px 4px;color:var(--mid);font-size:13.5px;background:var(--surface);border-bottom:1px solid var(--rule)}
 
+/* expandable guidance */
+.item{border-bottom:1px solid var(--rule)}
+.item .row{border-bottom:0;cursor:pointer;width:100%;text-align:left;font:inherit;color:inherit}
+.item[data-open="true"] .row{background:#fff}
+.chev{position:absolute;right:6px;top:14px;font-family:var(--mono);font-size:11px;color:var(--faint);pointer-events:none}
+.row{position:relative}
+.hint{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin-top:4px}
+.detail{background:var(--surface-2);border-top:1px solid var(--rule);padding:20px 22px 22px}
+.detail h4{font-family:var(--mono);font-size:10.5px;letter-spacing:.15em;text-transform:uppercase;color:var(--faint);margin:0 0 8px;font-weight:500}
+.dblock{margin-bottom:20px}
+.dblock:last-child{margin-bottom:0}
+.detail ol,.detail ul{margin:0;padding-left:19px}
+.detail li{margin-bottom:7px;font-size:14px;line-height:1.55}
+.detail ol li::marker{font-family:var(--mono);font-size:11px;color:var(--faint)}
+.lubegrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px}
+.lubecard{background:var(--surface);border:1px solid var(--rule);border-left:3px solid var(--green);border-radius:2px;padding:11px 13px}
+.lubecard .ln{font-weight:600;font-size:14px;margin-bottom:2px}
+.lubecard .lw{font-size:12.5px;color:var(--mid);margin-bottom:6px}
+.lubecard .le{font-family:var(--mono);font-size:10.5px;color:var(--faint);letter-spacing:.03em;line-height:1.5}
+.lubecard .lnote{font-size:12.5px;color:var(--mid);margin-top:7px;padding-top:7px;border-top:1px solid var(--rule);line-height:1.5}
+.avoid{background:#FBECEC;border:1px solid #E3BDBD;border-left:4px solid var(--red);border-radius:2px;padding:11px 14px;font-size:13.5px;color:#6B2020;line-height:1.55}
+.watch{background:#FDF6E7;border:1px solid #E0CFA0;border-left:4px solid var(--amber);border-radius:2px;padding:11px 14px}
+.watch ul{padding-left:17px;margin:0}
+.watch li{font-size:13.5px;color:#5A4A22;margin-bottom:6px}
+.watch li:last-child{margin-bottom:0}
+.kv{width:100%;border-collapse:collapse}
+.kv td{padding:6px 0;border-bottom:1px solid var(--rule);font-size:13.5px;vertical-align:top}
+.kv tr:last-child td{border-bottom:0}
+.kv td:first-child{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);width:150px;padding-right:14px;padding-top:8px}
+.tools{display:flex;flex-wrap:wrap;gap:6px}
+.tools span{font-family:var(--mono);font-size:11px;background:var(--surface);border:1px solid var(--rule);border-radius:2px;padding:4px 8px;color:var(--mid)}
+.dmeta{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin-bottom:14px}
+.nogo{font-size:13.5px;color:var(--mid)}
+
+.ref{background:var(--surface);border:1px solid var(--rule);border-radius:3px;margin-bottom:26px;overflow:hidden}
+.ref>button{width:100%;text-align:left;font:inherit;background:none;border:0;padding:15px 18px;cursor:pointer;display:flex;justify-content:space-between;align-items:center}
+.ref>button:hover{background:#fff}
+.ref h2{font-family:var(--disp);text-transform:uppercase;font-size:20px;letter-spacing:.04em;margin:0}
+.ref .toggle{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint)}
+.ref .body{padding:0 18px 20px;border-top:1px solid var(--rule)}
+.ref .body p{font-size:12.5px;color:var(--mid);max-width:70ch;margin:14px 0}
+
 .state{background:var(--surface);border:1px solid var(--rule);border-radius:3px;padding:30px 26px;text-align:left}
 .state.bad{border-left:4px solid var(--red)}
 .state h2{font-family:var(--disp);text-transform:uppercase;font-size:24px;letter-spacing:.04em;margin:0 0 8px}
@@ -129,7 +171,7 @@ footer b{color:var(--mid);font-weight:600}
 <div class="wrap">
   <p class="eyebrow" id="asof">Reading Notion</p>
   <h1>Rig maintenance status</h1>
-  <p class="sub">Live from the three Notion databases. Every load reads the current Status, days remaining, and miles remaining straight from the source, so this page cannot go stale.</p>
+  <p class="sub">Live from the three Notion databases. Every load reads the current Status, days remaining, and miles remaining straight from the source, so this page cannot go stale. Tap any item for the lubricant, the tools, the steps, and the numbers for this rig specifically.</p>
   <div id="app">
     <div class="state">
       <h2>Loading</h2>
@@ -141,6 +183,8 @@ footer b{color:var(--mid);font-weight:600}
   </div>
   <footer id="foot" hidden>
     <b>How to read this.</b> Overdue and Due Soon come from the Status formula in Notion: at or below zero days or miles is overdue, within 30 days or 1,000 miles is due soon.<br>
+    <b>Guidance lives in code, not Notion.</b> Every item expands to show which lubricant it takes, what to avoid, the steps, and the specs. That content is in <b>api/guidance.js</b>, keyed to the task title. Rename a task in Notion and its guidance stops matching, and a warning appears at the top of this page.<br>
+    <b>No-due-date items are not shown.</b> Every Trip, Before/After Storage, and As Needed tasks still exist in Notion but are filtered out here, because a board full of items that can never come due trains you to stop reading the board.<br>
     <b>The baseline.</b> Items marked BASELINE have never actually been serviced. The trailer arrived with no service history, so a clock-start entry dated 2025-07-15 gives every interval something to measure from. It is not a record of work performed.<br>
     <b>Trailer mileage is an estimate</b> of towed miles starting from zero, so lean on the calendar triggers rather than the mileage ones on the trailer.<br>
     <b>Generator items show as never logged on purpose.</b> The Champion 4000W was bought new and separately, so its clock does not start with the trailer.
@@ -148,16 +192,15 @@ footer b{color:var(--mid);font-weight:600}
 </div>
 
 <script>
-const COLOR={"OVERDUE":"var(--red)","Due Soon":"var(--amber)","On Track":"var(--green)","Checklist":"var(--slate)","Never Logged":"var(--gray)"};
-const ORDER=["OVERDUE","Due Soon","On Track","Never Logged","Checklist"];
+const COLOR={"OVERDUE":"var(--red)","Due Soon":"var(--amber)","On Track":"var(--green)","Never Logged":"var(--gray)"};
+const ORDER=["OVERDUE","Due Soon","On Track","Never Logged"];
 const BLURB={
  "OVERDUE":"Past the interval on days, miles, or both. The trailer carries a catch-up backlog from the clock-start baseline, so much of this is routine cleaning and lubrication rather than anything failing.",
  "Due Soon":"Inside 30 days or 1,000 miles. Worth folding into the next trip or the next shop visit.",
  "On Track":"Serviced recently enough that nothing is pending.",
- "Never Logged":"No service entry exists yet, so there is nothing to measure an interval from.",
- "Checklist":"Every trip, before or after storage, or as needed. These have no due date and are never overdue. They are habits, not timers."
+ "Never Logged":"No service entry exists yet, so there is nothing to measure an interval from."
 };
-let DATA=null, veh="all", q="", activeStatus=null;
+let DATA=null, veh="all", q="", activeStatus=null, open=new Set(), lubeOpen=false;
 
 function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 function fmt(d){
@@ -251,7 +294,6 @@ function gaugeHTML(t){
     '<div class="tick" style="left:50%"></div></div><div class="cap">'+esc(t.intervalLabel)+' \u00b7 '+Math.round(t.elapsed*100)+'%</div></div>';
 }
 function statHTML(t){
-  if(t.status==="Checklist") return '<div class="n" style="color:var(--slate)">'+esc(t.intervalType)+'</div><div class="l">No due date</div>';
   if(t.status==="Never Logged") return '<div class="n" style="color:var(--gray)">Not logged</div><div class="l">No start point</div>';
   const bits=[];
   if(t.daysRemaining!=null) bits.push([t.daysRemaining,"days"]);
@@ -262,17 +304,89 @@ function statHTML(t){
   return '<div class="n" style="color:'+COLOR[t.status]+'">'+say(bits[0])+'</div><div class="l">'+bits[0][1]+'</div>'+
     (bits[1]?'<div class="l">'+say(bits[1])+" "+bits[1][1]+'</div>':"");
 }
+function lubeCard(l){
+  return '<div class="lubecard"><div class="ln">'+esc(l.name)+'</div>'+
+    (l.where?'<div class="lw">'+esc(l.where)+'</div>':"")+
+    (l.examples?'<div class="le">'+esc(l.examples)+'</div>':"")+
+    (l.note?'<div class="lnote">'+esc(l.note)+'</div>':"")+'</div>';
+}
+
+function detailHTML(t){
+  const g=t.guidance;
+  if(!g) return '<div class="detail"><p class="nogo">No guidance written for this task yet. '+
+    'Add an entry keyed <code>'+esc(slug(t.task))+'</code> to <code>api/guidance.js</code>.</p></div>';
+
+  let h='<div class="detail">';
+
+  const meta=[];
+  if(g.time) meta.push(g.time);
+  if(t.intervalLabel) meta.push("every "+t.intervalLabel);
+  if(g.shop) meta.push("shop job");
+  if(meta.length) h+='<div class="dmeta">'+esc(meta.join(" \u00b7 "))+'</div>';
+
+  if(g.lube&&g.lube.length){
+    h+='<div class="dblock"><h4>What to lubricate it with</h4><div class="lubegrid">'+
+      g.lube.map(lubeCard).join("")+'</div></div>';
+  }
+  if(g.avoid){
+    h+='<div class="dblock"><h4>Do not use</h4><div class="avoid">'+esc(g.avoid)+'</div></div>';
+  }
+  if(g.tools&&g.tools.length){
+    h+='<div class="dblock"><h4>What you need</h4><div class="tools">'+
+      g.tools.map(x=>'<span>'+esc(x)+'</span>').join("")+'</div></div>';
+  }
+  if(g.steps&&g.steps.length){
+    h+='<div class="dblock"><h4>How to do it</h4><ol>'+
+      g.steps.map(x=>'<li>'+esc(x)+'</li>').join("")+'</ol></div>';
+  }
+  if(g.specs&&g.specs.length){
+    h+='<div class="dblock"><h4>Numbers that matter</h4><table class="kv">'+
+      g.specs.map(p=>'<tr><td>'+esc(p[0])+'</td><td>'+esc(p[1])+'</td></tr>').join("")+
+      '</table></div>';
+  }
+  if(g.watch&&g.watch.length){
+    h+='<div class="dblock"><h4>On this rig specifically</h4><div class="watch"><ul>'+
+      g.watch.map(x=>'<li>'+esc(x)+'</li>').join("")+'</ul></div></div>';
+  }
+  if(t.url){
+    h+='<div class="dblock"><a class="reload" href="'+esc(t.url)+'" target="_blank" rel="noopener">'+
+      'Open in Notion to log it</a></div>';
+  }
+  return h+'</div>';
+}
+
 function rowHTML(t){
   const tags=(t.priority==="Critical"?'<span class="tag crit">Critical</span>':"")+
     (t.shop?'<span class="tag shop">Shop</span>':"")+
     (t.baselineOnly?'<span class="tag base">Baseline</span>':"");
   const last=t.baselineOnly?"Clock started "+fmt(t.lastDone)+", no work done"
     :(t.lastDone?"Last done "+fmt(t.lastDone):"Never serviced");
-  const name=t.url?'<a href="'+esc(t.url)+'" target="_blank" rel="noopener">'+esc(t.task)+'</a>':esc(t.task);
-  return '<div class="row"><div class="bar" style="background:'+COLOR[t.status]+'"></div>'+
-    '<div><div class="t-name">'+name+tags+'</div><div class="t-meta">'+
-    esc(t.vehicleName)+' \u00b7 '+esc(t.category||"Uncategorised")+' \u00b7 '+esc(last)+'</div></div>'+
-    gaugeHTML(t)+'<div class="stat">'+statHTML(t)+'</div></div>';
+  const isOpen=open.has(t.id);
+  const lubeHint=t.guidance&&t.guidance.lube&&t.guidance.lube.length
+    ? t.guidance.lube.map(l=>l.name).join(" + ") : "";
+
+  return '<div class="item" data-open="'+isOpen+'">'+
+    '<div class="row" role="button" tabindex="0" data-id="'+esc(t.id)+'" '+
+      'aria-expanded="'+isOpen+'">'+
+      '<div class="bar" style="background:'+COLOR[t.status]+'"></div>'+
+      '<div><div class="t-name">'+esc(t.task)+tags+'</div><div class="t-meta">'+
+      esc(t.vehicleName)+' \u00b7 '+esc(t.category||"Uncategorised")+' \u00b7 '+esc(last)+'</div>'+
+      (lubeHint?'<div class="hint">Lube: '+esc(lubeHint)+'</div>':"")+'</div>'+
+      gaugeHTML(t)+'<div class="stat">'+statHTML(t)+'</div>'+
+      '<span class="chev">'+(isOpen?"\u2212":"+")+'</span></div>'+
+    (isOpen?detailHTML(t):"")+'</div>';
+}
+
+function slug(s){return String(s||"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"");}
+
+function refHTML(){
+  if(!DATA.lube) return "";
+  const ids=Object.keys(DATA.lube).filter(k=>k!=="none");
+  return '<div class="ref"><button id="refbtn" aria-expanded="'+lubeOpen+'">'+
+    '<h2>Lubricant reference</h2><span class="toggle">'+(lubeOpen?"Hide":"Show")+' \u00b7 '+ids.length+' products</span></button>'+
+    (lubeOpen?'<div class="body"><p>The shopping list. Using one product everywhere is the mistake: petroleum oil degrades rubber and plastic, and anything that stays wet on an exterior part collects road grit and becomes grinding paste.</p>'+
+      '<div class="lubegrid">'+ids.map(k=>lubeCard(DATA.lube[k])).join("")+'</div></div>':"")+
+    '</div>';
 }
 
 function listHTML(){
@@ -305,14 +419,28 @@ function warnHTML(){
 
 function render(){
   document.getElementById("app").innerHTML=
-    warnHTML()+rigsHTML()+railHTML()+nextHTML()+listHTML();
+    warnHTML()+rigsHTML()+railHTML()+nextHTML()+refHTML()+listHTML();
   document.getElementById("foot").hidden=false;
   wire();
+}
+function toggleRow(id){
+  if(open.has(id)) open.delete(id); else open.add(id);
+  render();
+  const el=document.querySelector('.row[data-id="'+id+'"]');
+  if(el) el.focus();
 }
 function wire(){
   document.querySelectorAll(".chip").forEach(c=>c.addEventListener("click",()=>{
     activeStatus=activeStatus===c.dataset.status?null:c.dataset.status; render();
   }));
+  const rb=document.getElementById("refbtn");
+  if(rb) rb.addEventListener("click",()=>{lubeOpen=!lubeOpen; render();});
+  document.querySelectorAll(".row[data-id]").forEach(r=>{
+    r.addEventListener("click",()=>toggleRow(r.dataset.id));
+    r.addEventListener("keydown",e=>{
+      if(e.key==="Enter"||e.key===" "){e.preventDefault();toggleRow(r.dataset.id);}
+    });
+  });
   const seg=document.getElementById("vehseg");
   if(seg) seg.addEventListener("click",e=>{
     const b=e.target.closest("button"); if(!b) return; veh=b.dataset.veh; render();

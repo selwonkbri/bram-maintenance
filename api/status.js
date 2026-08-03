@@ -1,6 +1,8 @@
 // Reads the three RV maintenance databases from Notion and returns one JSON payload.
 // The token never reaches the browser. It lives in the NOTION_TOKEN environment variable.
 
+import { guidanceFor, LUBE, RIG } from "./guidance.js";
+
 const NOTION = "https://api.notion.com/v1";
 const VERSION = "2025-09-03";
 
@@ -19,11 +21,13 @@ const FALLBACK_DS = {
 
 const BASELINE_TITLE = "Baseline: trailer placed in service (no service performed)";
 
-// Interval types that are checklist habits, not timers. These never show a due date.
-const CHECKLIST_TYPES = new Set(["Every Trip", "Before/After Storage", "As Needed"]);
+// Interval types with no due date. These are excluded from the dashboard entirely.
+// They still exist in Notion, they just do not belong on a status board, because a
+// board full of items that can never be due trains you to ignore the board.
+const EXCLUDED_TYPES = new Set(["Every Trip", "Before/After Storage", "As Needed"]);
 
-// Judgment call, not stored in Notion: which tasks want a bay or a technician.
-// Matched on task title. Add a "Shop Required" checkbox in Notion to retire this list.
+// Fallback only. `shop` now comes from the guidance module. This list catches any
+// task that has no guidance entry yet.
 const SHOP_PATTERNS = [
   /qualified dealer/i, /certified rv technician/i, /wheel bearing/i, /repack/i,
   /brake amp draw/i, /engine oil/i, /fuel filter/i, /transmission fluid/i,
@@ -145,7 +149,6 @@ function pick(row, names) {
 }
 
 function classify(rawStatus, intervalType, daysRem, milesRem, hasHistory) {
-  if (CHECKLIST_TYPES.has(intervalType)) return "Checklist";
   const s = String(rawStatus || "").toLowerCase();
   if (s.includes("overdue")) return "OVERDUE";
   if (s.includes("due soon") || s.includes("soon")) return "Due Soon";
@@ -245,7 +248,13 @@ export default async function handler(req, res) {
 
     let blankStatus = 0;
 
-    const tasks = taskRows.map((t) => {
+    // Drop the no-due-date items before anything else touches them.
+    const scheduledRows = taskRows.filter(
+      (t) => !EXCLUDED_TYPES.has(pick(t, ["Interval Type"]))
+    );
+    const excludedCount = taskRows.length - scheduledRows.length;
+
+    const tasks = scheduledRows.map((t) => {
       const title = pick(t, ["Task"]) || "Untitled task";
       const intervalType = pick(t, ["Interval Type"]);
       const months = pick(t, ["Interval Months"]);
@@ -260,6 +269,8 @@ export default async function handler(req, res) {
 
       const realWork = logIds.filter((id) => id !== baselineId);
       const baselineOnly = Boolean(baselineId) && logIds.includes(baselineId) && realWork.length === 0;
+
+      const guidance = guidanceFor(title);
 
       const status = classify(
         rawStatus, intervalType,
@@ -294,7 +305,10 @@ export default async function handler(req, res) {
         timesServiced: pick(t, ["Times Serviced"]),
         baselineOnly,
         neverServiced: logIds.length === 0 || baselineOnly,
-        shop: SHOP_PATTERNS.some((re) => re.test(title)),
+        shop: guidance
+          ? Boolean(guidance.shop)
+          : SHOP_PATTERNS.some((re) => re.test(title)),
+        guidance,
         elapsed: elapsedFraction(
           intervalType, months, miles,
           typeof daysRem === "number" ? daysRem : null,
@@ -314,6 +328,14 @@ export default async function handler(req, res) {
         `Notion returned no Status value on ${blankStatus} of ${tasks.length} tasks. The integration is probably missing access to one of the three databases, so these figures were recalculated rather than read.`
       );
     }
+    const unguided = tasks.filter((t) => !t.guidance);
+    if (unguided.length) {
+      warnings.push(
+        `No guidance written for ${unguided.length} task${unguided.length === 1 ? "" : "s"}: ${unguided
+          .map((t) => t.task)
+          .join(", ")}. Either the task is new or its title changed in Notion, which breaks the slug match in api/guidance.js.`
+      );
+    }
 
     res.setHeader("Cache-Control", "s-maxage=60, stale-while-revalidate=300");
     res.status(200).json({
@@ -321,6 +343,9 @@ export default async function handler(req, res) {
       vehicles,
       tasks,
       history: history.slice(0, 40),
+      lube: LUBE,
+      rig: RIG,
+      excludedCount,
       warnings,
     });
   } catch (err) {
