@@ -9,7 +9,7 @@
 //   - The odometer requirement is enforced here, not just in the browser, so a
 //     client that skips the prompt still cannot write a guessed mileage.
 
-import { odometerPolicy, odometerRequired, todayISO } from "../lib/policy.js";
+import { odometerPolicy, odometerRequired, resolveDate } from "../lib/policy.js";
 
 const NOTION = "https://api.notion.com/v1";
 const VERSION = "2025-09-03";
@@ -115,7 +115,9 @@ export default async function handler(req, res) {
   }
 
   try {
-    const today = todayISO();
+    // The browser supplies its local date. UTC would stamp evening entries
+    // a day forward for anyone west of Greenwich.
+    const today = resolveDate(body.localDate);
 
     // Read the task straight from Notion rather than trusting the client.
     const taskPage = await notion(token, `/pages/${taskId}`);

@@ -201,6 +201,10 @@ function fmt(d){
   return new Date(Date.UTC(p[0],p[1]-1,p[2])).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric",timeZone:"UTC"});
 }
 function num(n){return Number(n).toLocaleString("en-US");}
+function localToday(){
+  const d=new Date();
+  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+}
 
 function vehKey(t){
   const n=(t.vehicleName||"").toLowerCase();
@@ -404,7 +408,7 @@ function openLog(t){
     '<p class="who">'+esc(t.task)+'</p>'+
     '<div id="lerr"></div>'+
     '<div class="field"><label>Vehicle</label><div class="val">'+esc(t.vehicleName)+'</div></div>'+
-    '<div class="field"><label>Date</label><div class="val">'+fmt(new Date().toISOString().slice(0,10))+'</div></div>'+
+    '<div class="field"><label>Date</label><div class="val">'+fmt(localToday())+'</div></div>'+
     '<div class="field"><label>Performed by</label><div class="val">Self</div></div>'+
     '<div class="field'+(mustAsk?" req":"")+'"><label>Odometer</label>'+
       '<input id="lodo" type="text" inputmode="numeric" value="'+esc(prefill)+'" '+
@@ -446,7 +450,7 @@ async function submitLog(t, mustAsk){
   const typed=raw!=="" ? Number(raw) : null;
   // Only send a number when the user actually supplied or changed one.
   const changed=typed!==null && typed!==v.odometer;
-  const payload={taskId:t.id, odometer: (mustAsk||changed) ? typed : null, note:note};
+  const payload={taskId:t.id, odometer: (mustAsk||changed) ? typed : null, note:note, localDate:localToday()};
 
   go.disabled=true; go.textContent="Writing...";
   try{
