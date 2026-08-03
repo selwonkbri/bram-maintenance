@@ -2,6 +2,7 @@
 // The token never reaches the browser. It lives in the NOTION_TOKEN environment variable.
 
 import { guidanceFor, LUBE, RIG } from "./guidance.js";
+import { odometerPolicy, odometerRequired, todayISO } from "../lib/policy.js";
 
 const NOTION = "https://api.notion.com/v1";
 const VERSION = "2025-09-03";
@@ -247,6 +248,7 @@ export default async function handler(req, res) {
       .sort((a, b) => String(b.date || "").localeCompare(String(a.date || "")));
 
     let blankStatus = 0;
+    const today = todayISO();
 
     // Drop the no-due-date items before anything else touches them.
     const scheduledRows = taskRows.filter(
@@ -271,6 +273,13 @@ export default async function handler(req, res) {
       const baselineOnly = Boolean(baselineId) && logIds.includes(baselineId) && realWork.length === 0;
 
       const guidance = guidanceFor(title);
+
+      const veh = vehicles[vehicleId];
+      const policy = odometerPolicy({
+        intervalMiles: typeof miles === "number" ? miles : null,
+        vehicleType: veh ? veh.type : null,
+      });
+      const mustAsk = odometerRequired(policy, veh ? veh.odometerUpdated : null, today);
 
       const status = classify(
         rawStatus, intervalType,
@@ -309,6 +318,8 @@ export default async function handler(req, res) {
           ? Boolean(guidance.shop)
           : SHOP_PATTERNS.some((re) => re.test(title)),
         guidance,
+        odometerTier: policy.tier,
+        odometerRequired: mustAsk,
         elapsed: elapsedFraction(
           intervalType, months, miles,
           typeof daysRem === "number" ? daysRem : null,
