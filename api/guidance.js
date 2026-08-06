@@ -242,92 +242,26 @@ export const GUIDANCE = {
   },
 
   "clean-and-lube-awning-moving-parts": {
-    lube: ["dry-ptfe"],
+    lube: ["slide-lube"],
     time: "45 min",
-    tools: ["Dry PTFE aerosol", "Bucket of mild soap and water", "Soft brush", "Step stool"],
+    tools: ["3-IN-ONE RV Care Slide-Out Silicone Lube", "Bucket of mild soap and water", "Soft brush", "Step stool"],
     steps: [
+      "This is a Lippert Solera 3000 Series power awning. It has a drive arm and an idler arm, each with a pitch elbow joint, supporting a roll tube that the fabric wraps around, and it opens and closes on a direct drive motor at the push of a button.",
       "Extend the awning fully on a dry day with no wind in the forecast.",
       "Wash the arms, the roller tube ends, and the fabric with mild soap. Rinse and let everything dry completely.",
-      "Dry PTFE into the arm pivots, the elbow joints, the slider channels, and the roller tube end caps.",
+      "Spray the 3-IN-ONE Slide-Out Silicone Lube, the green can with the red flip cap, into the awning rail channel on the sidewall where the roll tube slides in and out.",
+      "Spray it into both pitch elbow joints on the arms, and onto the roller tube end caps at the drive head and idler head.",
       "Retract and extend three full cycles to work the lube through the travel.",
       "Check the arm mounting screws into the sidewall and the lag bolts at the top rail. These loosen from tow vibration.",
       "Inspect the fabric hem and the roller tube spring tension. Slack fabric on the road is what tears an awning off.",
     ],
-    specs: [],
-    watch: [
-      "Never retract a wet awning and leave it. Mildew on acrylic is permanent.",
-      "If the awning is a powered Carefree or Dometic, do not lube the motor gearbox. It is sealed.",
-    ],
-  },
-
-  "service-screen-door-closer-and-latch": {
-    lube: ["dry-lube", "graphite"],
-    time: "20 min",
-    tools: ["B'laster Dry Lube", "Hillman graphite tube", "Phillips screwdriver"],
-    steps: [
-      "The screen door swings outward alongside the main entry door on a long hinge. It does not slide sideways.",
-      "The screen door pulls itself shut using a wide elastic strap hidden in the door frame. Look it over from top to bottom for fraying, splitting, or a chalky dried out look. This strap is the part that wears out and it lives in the sun.",
-      "Open the screen door and let go. It should pull itself closed firmly without slamming.",
-      "Run a screwdriver over every screw down the long hinge on the side of the door and snug up any that have backed out.",
-      "Check the push bar across the middle of the screen is tight, and that the mesh guard on the lower half is not lifting at its edges.",
-      "Spray B'laster Dry Lube on the hinge and the latch, let it dry, then work the door.",
-      "One squeeze of the Hillman graphite tube into the entry door key lock, then work the key.",
-    ],
     specs: [
-      ["Door", "28 in x 72 in entry door"],
-      ["Hinge and latch", "B'laster Dry Lube"],
-      ["Key lock", "Hillman graphite tube"],
+      ["Awning", "Lippert Solera 3000 Series, direct drive motor, manual override available"],
+      ["Lubricant", "3-IN-ONE RV Care Slide-Out Silicone Lube, green can"],
     ],
     watch: [
-      "If the screen door has started dragging or catching, check the entry step legs first. Legs set too long push the top step up into the door.",
-      "If the elastic strap snaps, the door will swing wide open in wind and can bend the frame. Replace it when it starts looking worn rather than waiting.",
-    ],
-  },
-
-  "service-morryde-stepabove-entry-steps": {
-    lube: ["dry-lube"],
-    time: "30 min",
-    tools: ["B'laster Dry Lube", "Screwdriver", "Socket set", "Brush"],
-    steps: [
-      "These are MORryde StepAbove steps: three aluminum steps on a black frame that fold up into the doorway for travel.",
-      "Press the button on the side and run both legs all the way out and all the way back in. Both should move with the same effort. If one is stiff or stuck, that is the most common problem with these.",
-      "Brush the grit out of the leg tubes and the hinge.",
-      "Spray B'laster Dry Lube into the leg tubes, the adjustment pins, the hinge, and the latches. Let it dry, then cycle the legs again.",
-      "Check the screws holding the hinge plate to the floor at the doorway. Tighten any that are loose.",
-      "Fold the steps up and confirm both side latches click into the door frame. Both need to hold, not just one.",
-      "Check the grip strips on each step tread are still stuck down and not peeling at the edges.",
-      "Slide the handrail all the way out and back in, and spray the tube with dry lube.",
-    ],
-    specs: [
-      ["Steps", "MORryde StepAbove, 3 step"],
-      ["Lubricant", "B'laster Dry Lube"],
-      ["Support", "MORryde 574-293-1581, quote the serial on the step tag"],
-    ],
-    watch: [
-      "Sweep the steps off before folding them up, or the grit lands on the floor inside.",
-      "If the top step touches the door when it is closed, the hinge plate needs to move back slightly. That is a shop or a careful DIY job, not something to force.",
-      "On soft ground the legs sink. Put a board under them.",
-    ],
-  },
-
-  "confirm-baggage-doors-seal-tight-and-are-not-leaking": {
-    lube: ["seal-conditioner"],
-    time: "20 min",
-    tools: ["3-IN-ONE RV Care Rubber Seal Conditioner", "Flashlight", "Strip of paper", "Screwdriver"],
-    steps: [
-      "The big front compartment that runs the full width of the trailer is the important one. The utility panel and the water hose reel live in there, so water getting in reaches more than just your gear.",
-      "Close each door on a strip of paper and pull the paper out. It should drag. If it slides out freely, the seal is not squeezing shut at that spot.",
-      "Shine the flashlight around the inside of each compartment, especially the bottom corners and where the floor meets the outer wall. Water stains on the grey floor are the thing to look for.",
-      "Check the small drain holes at the bottom of each compartment are clear and not plugged with dirt.",
-      "Spray the rubber seal all the way around each door opening with the 3-IN-ONE Rubber Seal Conditioner, then wipe off the extra.",
-      "Lift the big front door and let go partway. The gas strut should hold it up on its own.",
-    ],
-    specs: [
-      ["Seal conditioner", "3-IN-ONE RV Care Rubber Seal Conditioner, orange and black can"],
-    ],
-    watch: [
-      "If the paper slides out with no drag at a spot, photograph it and note which door and where. Adjusting the latch is the fix and it is worth having a tech do it.",
-      "Everything in these compartments is under a 3 year seal warranty, so a leaking seal is a warranty call rather than a DIY repair.",
+      "Never retract a wet awning and leave it. Mildew on the fabric is permanent.",
+      "The drive motor at the drive head is sealed. Do not spray anything into the motor housing itself, only the rail channel, the joints, and the end caps.",
     ],
   },
 
@@ -428,20 +362,24 @@ export const GUIDANCE = {
   },
 
   "clean-and-lube-roof-vent-mechanisms": {
-    lube: ["dry-ptfe", "dry-silicone"],
+    lube: ["mineral-oil", "seal-conditioner"],
     time: "30 min",
-    tools: ["Dry PTFE aerosol", "Silicone conditioner", "Soft brush", "Screwdriver", "Ladder"],
+    tools: ["3-IN-ONE Mineral Oil", "3-IN-ONE RV Care Rubber Seal Conditioner", "Soft brush", "Screwdriver", "Ladder"],
     steps: [
-      "Open each vent fully and brush the debris out of the scissor mechanism and the crank gears.",
-      "Dry PTFE on the scissor pivots, the crank worm gear, and the hinge points.",
-      "Silicone conditioner on the vent lid gasket where it meets the flange.",
+      "Open each vent fully from inside and brush the dust out of the crank and gear mechanism.",
+      "A few drops of the 3-IN-ONE Mineral Oil, the small clear bottle with the black drip spout, onto the crank gears and the scissor arm pivots. Reach it from inside with the vent open.",
+      "Turn the crank a few times to spread the oil through the gears.",
+      "Spray the 3-IN-ONE Rubber Seal Conditioner onto the vent lid gasket where it meets the roof flange, from up on the roof.",
       "Cycle each vent five times and confirm it seats flat and even when closed.",
-      "On the Maxxair or Fan-Tastic style powered fans, clean the blade and check the lid arms for cracking. UV kills those arms before anything else fails.",
+      "On the powered fan, wipe the blade clean and check the lid support arms for cracking. Sun is what breaks those arms down.",
     ],
-    specs: [],
+    specs: [
+      ["Gears and crank", "3-IN-ONE Mineral Oil, clear bottle with black drip spout"],
+      ["Lid gasket", "3-IN-ONE RV Care Rubber Seal Conditioner, orange and black can"],
+    ],
     watch: [
       "A vent lid that does not seat flat is a slow leak that shows up as a stained ceiling panel months later.",
-      "Vent covers change the game here. If you have them installed, check that the cover mounting screws have not backed out.",
+      "If you have vent covers installed, check the cover mounting screws have not backed out.",
     ],
   },
 
@@ -1078,19 +1016,22 @@ export const GUIDANCE = {
   },
 
   "open-close-and-confirm-emergency-egress-windows-function": {
-    lube: ["dry-ptfe", "dry-silicone"],
+    lube: ["dry-lube", "seal-conditioner"],
     time: "10 min",
-    tools: ["Dry PTFE", "Silicone conditioner", "Rag"],
+    tools: ["B'laster Dry Lube", "3-IN-ONE RV Care Rubber Seal Conditioner", "Rag"],
     steps: [
       "Actually open each egress window fully. Do not just work the latch.",
       "Confirm the window swings clear and stays open on its own rather than falling back.",
       "Check that nothing outside blocks the exit path and nothing inside blocks access to it.",
-      "Dry PTFE on the latch mechanism and the hinge, wiping the excess.",
-      "Silicone conditioner on the window seal.",
+      "Spray B'laster Dry Lube on the latch mechanism and the hinge, wipe the excess.",
+      "Spray 3-IN-ONE Rubber Seal Conditioner on the window seal.",
       "Close it and confirm it seals and latches properly. An egress window that has been opened and not reseated correctly leaks.",
       "Walk Tess through opening it. In an actual fire nobody is reading a decal.",
     ],
-    specs: [],
+    specs: [
+      ["Latch and hinge", "B'laster Dry Lube"],
+      ["Window seal", "3-IN-ONE RV Care Rubber Seal Conditioner"],
+    ],
     watch: [
       "This is a five minute task with an outsized consequence if it is skipped. The failure mode is a window that is painted, sealed, or corroded shut, and you find out at the worst possible time.",
     ],
