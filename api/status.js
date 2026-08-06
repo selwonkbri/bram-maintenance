@@ -1,7 +1,7 @@
 // Reads the three RV maintenance databases from Notion and returns one JSON payload.
 // The token never reaches the browser. It lives in the NOTION_TOKEN environment variable.
 
-import { guidanceFor, LUBE, RIG } from "./guidance.js";
+import { guidanceFor, RIG } from "./guidance.js";
 import { odometerPolicy, odometerRequired, todayISO } from "../lib/policy.js";
 
 const NOTION = "https://api.notion.com/v1";
@@ -354,7 +354,6 @@ export default async function handler(req, res) {
       vehicles,
       tasks,
       history: history.slice(0, 40),
-      lube: LUBE,
       rig: RIG,
       excludedCount,
       warnings,

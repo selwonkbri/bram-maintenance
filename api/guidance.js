@@ -48,6 +48,13 @@ export const LUBE = {
     examples: "Lucas White Lithium, CRC White Lithium, any NLGI #2 white lithium",
     note: "Stays wet, so keep it off anything that sees road spray unless it is inside a housing.",
   },
+  "chassis-grease": {
+    name: "GC-LB chassis grease",
+    form: "Cartridge for a grease gun",
+    where: "Suspension wet bolts, shackle bolts, equalizer pivots",
+    examples: "Lucas Red 'N' Tacky #2, any NLGI #2 lithium complex EP marked GC-LB",
+    note: "Lippert TI-340 calls for the GC-LB rating; Dexter calls for lithium complex NLGI #2. Same tub works for the trailer wheel bearings, so buy one and use it for both. Never mix grease types in a joint.",
+  },
   "bearing-grease": {
     name: "NLGI #2 wheel bearing grease",
     form: "Tub or cartridge, lithium complex",
@@ -112,7 +119,7 @@ export const LUBE = {
 
 export const RIG = {
   trailer:
-    "2025 Brinkley Model I 275 travel trailer, bumper pull, 30.8 ft hitch to bumper, tandem axle. 460Ah Vatrer LiFePO4 house bank, Renogy MPPT solar controller, Furrion Arctic compressor fridge, Furrion Chill Cube 18K variable speed AC with heat pump, Champion 4000W dual fuel inverter generator.",
+    "2025 Brinkley Model I 275 travel trailer, bumper pull, 30.8 ft hitch to bumper, tandem axle. MODEL YEAR MATTERS ON THE FRONT END: this is a 2025 build, which uses a composite and aluminum lower nose with a metal TuffCoat section. Brinkley switched to a fully molded fiberglass front cap on late 2026 and 2026.5 units built after late summer 2025, and that same change swapped the front window shade from accordion to a flat roller. This rig has the accordion shade, which is the quick way to confirm it is the earlier front end. Do not apply fiberglass or gelcoat guidance to this nose. Euramax StrongLite laminated aluminum walls over Azdel with automotive-grade paint. Alpha Systems low-maintenance roof, walkable reinforced slide roof. Lippert Road Armor equalizer, greaseable wet bolts, tandem 5,100 lb axles, Hankook Vantra 225/75 LRE 10-ply on 15 in aluminum wheels, ABS with anti-sway. Demco EZ Latch coupler. Single flush-floor rack and pinion slide with topper. Tankless on-demand water heater, no anode rod. MORryde StepAbove entry steps, swing-out screen door with a Lippert Screen Shot closer. 460Ah Vatrer LiFePO4 house bank, Renogy MPPT solar controller, Furrion Arctic compressor fridge, Furrion Chill Cube 18K variable speed AC with heat pump, Champion 4000W dual fuel inverter generator. GVWR 9,600 lbs, UVW 7,485 lbs, hitch weight 705 lbs. Fresh 55 gal, gray 75 gal, black 40 gal.",
   truck:
     "2018 Ram 2500 with the 6.7L Cummins turbodiesel. Tows near capacity continuously, so every Ram interval on this list is the severe duty number, not the normal one. Hot Shot's Secret EDT goes in at every fillup.",
 };
@@ -153,7 +160,7 @@ export const GUIDANCE = {
       "Blow each cylinder out with air first to clear grit and old residue.",
       "One short puff of graphite straight into the keyway. More is not better. Excess graphite packs and binds.",
       "Insert the key and work it in and out ten or twelve times, rotating the cam through its full travel each way.",
-      "Wipe the black residue off the door skin immediately. It stains gelcoat if it sits and gets wet.",
+      "Wipe the black residue off the door skin immediately. It stains automotive paint if it sits and gets wet, and this rig has paint, not gelcoat.",
       "Repeat on every baggage door cam lock, the cargo passthrough locks, and the entry door deadbolt.",
     ],
     specs: [],
@@ -183,38 +190,54 @@ export const GUIDANCE = {
     ],
   },
 
-  "adjust-screen-door-and-latch": {
-    lube: ["dry-ptfe"],
-    avoid: "No wet lube in the slider track. It collects sand and jams the door.",
+  "service-screen-door-closer-and-latch": {
+    lube: ["dry-ptfe", "dry-graphite"],
+    avoid: "No wet lube anywhere on this door. There is no track to lubricate, and anything that stays wet on the hinge collects road grit.",
     time: "20 min",
-    tools: ["Dry PTFE aerosol", "Phillips screwdriver", "Vacuum or compressed air"],
+    tools: ["Dry PTFE aerosol", "Dry graphite", "Phillips screwdriver"],
     steps: [
-      "Vacuum the bottom track and the slider channel. Sand in the track is almost always the actual complaint.",
-      "Dry PTFE into the slider rollers, the track, and the latch tongue.",
-      "Check the screen door hinge screws and the latch strike alignment. If the latch does not catch cleanly, loosen the strike, shift it, and retighten.",
-      "Work the door twenty cycles and confirm it latches on its own without a shove.",
+      "This screen door swings out on a continuous hinge alongside the main entry door. It does not slide. There is no track, no rollers, and nothing to vacuum.",
+      "Inspect the Lippert Screen Shot closer webbing end to end. It closes the door with elastic under tension, not a spring, so the webbing is the wear item. Look for fraying, chalking, glazing, or lost tension. Replace before it snaps.",
+      "Confirm the closer pulls the door fully shut without slamming. If tension is wrong, reposition the anchors in the door channel rather than stretching the webbing.",
+      "Check the continuous hinge screws along the full height. This is the fastener that works loose.",
+      "Check the Screen Assist push bar mounting and the Child/Pet Defender screen protector edges.",
+      "Work the entry door latch and deadbolt. Dry PTFE on the latch mechanism, dry graphite in the key cylinder only.",
     ],
-    specs: [],
+    specs: [
+      ["Entry door", "28 in x 72 in, Brinkley Deluxe Entrance Package"],
+      ["Closer", "Lippert Screen Shot, right-hand, elastic webbing"],
+      ["Screen protector", "Child/Pet Defender"],
+    ],
     watch: [
-      "A screen door that will not latch on its own will swing open at highway speed if the main door is left open at a stop. Fix the alignment, do not live with it.",
+      "If the screen door has started dragging, check the StepAbove leg adjustment before adjusting the door. Legs extended too far make the door bind on the top step, and over time that bends the door or the frame. This is the most reported StepAbove complaint.",
+      "A screen door that will not latch on its own will swing open at highway speed if the main door is left open at a stop.",
+      "Confirm the Screen Shot size against the Lippert door identification label inside the entry door frame before ordering a replacement.",
     ],
   },
 
-  "clean-and-lube-entry-steps": {
-    lube: ["dry-ptfe", "dielectric"],
-    avoid: "No wet grease on the step arms. They sit directly in road spray and salt.",
+  "service-morryde-stepabove-entry-steps": {
+    lube: ["dry-ptfe"],
+    avoid: "No wet grease anywhere. These sit in road spray and scoop gravel, and grease turns to grinding paste. The wet bike chain lube in stock has no use here.",
     time: "30 min",
-    tools: ["Dry PTFE aerosol", "Dielectric grease", "Wire brush", "Degreaser", "Socket set"],
+    tools: ["Dry PTFE aerosol", "Phillips and square drive bits", "Socket set", "Shop vacuum or brush"],
     steps: [
-      "Retract and extend the steps and watch where the motion is stiff or noisy.",
-      "Wire brush any surface rust off the arms and the pivot brackets, then wipe with degreaser.",
-      "Dry PTFE into every pivot point and linkage joint. Cycle five times.",
-      "Check the mounting bolts to the frame. Step brackets loosen and then crack the mount.",
-      "If the steps are electric, pull the motor connector, clean it, and put dielectric grease on it before reseating. Water in that plug is the usual cause of an intermittent step.",
+      "These are MORryde StepAbove manual fold-down steps, 3-step, hinge-plate mounted at the threshold with push-button auto-deploy legs. They are not electric. There is no motor and no connector to clean.",
+      "Cycle both legs through full travel. The single most reported failure is one leg sliding freely while the other seizes. Clean the leg tubes and hit the pins and tubes with dry PTFE.",
+      "Check every hinge plate screw at the threshold. These work loose and the plate setback is what controls door clearance.",
+      "Confirm both latches engage the door jamb flange. The design relies on both to secure the steps for travel, and a latch out of adjustment is what starts the screen door binding.",
+      "Check the anti-slip strips on each tread for lifting edges, and clear grit from the treads and hinge.",
+      "Extend and retract the 44 in telescoping handrail, check its mount, dry PTFE on the tube.",
     ],
-    specs: [],
+    specs: [
+      ["Unit", "MORryde StepAbove, 3-step, manual, adjustable legs"],
+      ["Support", "574-293-1581, parts@morryde.com, quote the tag serial"],
+      ["Handrail", "44 in telescoping, reaches the bottom step"],
+    ],
     watch: [
-      "Rust on the arms is normal and cosmetic until it reaches a pivot or a weld. Watch the bracket welds specifically.",
+      "If the top step contacts the entry door trim, the documented fix is moving the hinge plate back about a quarter inch from the threshold, keeping enough clearance that the step still clears the outer threshold edge and the skirting below.",
+      "Never lift the steps into the doorway with the door closed, and never move the rig with steps deployed.",
+      "On soft ground or sand the legs sink. Use a 2x6 or stabilizer pads under the feet.",
+      "These scoop gravel and dump it inside the door. Sweep the treads before flipping them up, per MORryde. It is a housekeeping annoyance, not a defect.",
     ],
   },
 
@@ -239,59 +262,75 @@ export const GUIDANCE = {
   "wash-exterior-fiberglass-and-metal": {
     lube: ["none"],
     time: "2 to 3 hours",
-    tools: ["RV-specific wash soap", "Soft wash brush on an extension pole", "Two buckets", "Microfiber drying towels", "Step ladder"],
+    tools: ["303 RV Wash and Seal or mild boat soap", "Soft wash brush on an extension pole", "Two buckets", "Microfiber drying towels", "Step ladder"],
     steps: [
-      "Work in the shade or early morning. Soap drying on hot gelcoat leaves streaks that need polishing out.",
-      "Rinse top down first to carry the loose grit off before any brush touches the surface.",
-      "Wash in sections top to bottom, rinsing each section before it dries.",
-      "Pay attention to the front cap, which takes the bug load, and the rear, which takes the road film. Bug remover on the front cap before the brush.",
-      "Rinse thoroughly and towel dry the horizontal surfaces to avoid water spots.",
+      "Know what you are washing. The sidewalls are Euramax StrongLite laminated aluminum over Azdel, finished in automotive-grade paint with a UV clearcoat. There is no gelcoat anywhere on this rig. On this 2025 build the front end is a composite and aluminum lower nose with a metal TuffCoat section, not the molded fiberglass cap that arrived on later 2026 units. Treat all of it like automotive paint.",
+      "Work in the shade or early morning. Soap drying on hot paint leaves streaks.",
+      "Rinse top down first so the loose grit leaves before a brush touches paint.",
+      "Wash in sections top to bottom, rinsing each before it dries. Two-bucket method if you care about swirl marks.",
+      "The nose takes the bug load and the rear takes the road film. Soak bugs off rather than scrubbing them off.",
+      "Rinse thoroughly, including the wheels and the galvanized wheel well shields, and towel dry the horizontal surfaces.",
       "While you are up close, look at every sealant bead. This is the best free inspection you get.",
     ],
-    specs: [],
+    specs: [
+      ["Walls", "Euramax StrongLite laminated aluminum over Azdel, automotive paint, 3-year color and gloss warranty"],
+      ["Front end (2025)", "Composite and aluminum lower nose, metal TuffCoat"],
+      ["Soap", "303 RV Wash and Seal, or mild boat soap"],
+    ],
     watch: [
-      "No automotive dish soap and nothing with degreaser. It strips wax and dulls gelcoat.",
-      "Keep the brush off the decals or you will lift the edges.",
+      "No petroleum distillates anywhere. Model I owners report they destroy the decals, and the decals are the most expensive part of the exterior to put right. That rules out most RV bug removers and degreasers.",
+      "No dish soap, no citrus solvent, nothing abrasive. Painted aluminum shows swirls like a car and cannot be compounded out the way gelcoat can.",
+      "Keep the brush off decal edges.",
+      "If Simple Green from a roof wash runs down the walls, rinse it off immediately. It strips the 303 sealant and attacks unprotected aluminum if it dwells.",
     ],
   },
 
-  "apply-non-abrasive-wax-to-exterior": {
+  "apply-spray-on-sealant-to-exterior": {
     lube: ["none"],
-    time: "4 to 6 hours",
-    tools: ["Non-abrasive RV wax or a marine-grade sealant", "Applicator pads", "Microfiber buffing towels", "Step ladder"],
+    time: "1 hour with two people",
+    tools: ["303 Touchless Sealant", "Pump sprayer or trigger bottle", "Garden hose", "Extension pole"],
     steps: [
-      "Wash and fully dry the rig first. Waxing over grit is sanding.",
-      "Work one panel at a time in the shade. Thin coats, not thick ones.",
-      "Let it haze, then buff off with clean microfiber, flipping to a dry side often.",
-      "Skip the roof unless the product is rated for it. Wax on a walkable roof is a fall hazard.",
-      "Keep wax off the decals unless it is decal safe.",
+      "Do this immediately after the wash, on a clean coach that is still wet. Interval is set to 3 months to match the wash for exactly this reason.",
+      "Work a 4 ft section at a time, on a cool surface, never in direct sun.",
+      "Spray the section, then rinse it. The product is water-activated, so there is no buffing step.",
+      "Two people is much faster: one sprays, one follows with the hose. It beads instantly where applied, so missed spots are obvious.",
+      "Do not skip the rear and the black decal panels. UV protection on the decals is the actual point of this task.",
     ],
-    specs: [],
+    specs: [
+      ["Product", "303 Touchless Sealant, water activated"],
+      ["Durability", "About 4 to 5 months per application"],
+      ["Interval", "Every wash, 3 months"],
+    ],
     watch: [
-      "Non-abrasive is the operative word. Polishing compound on a thin gelcoat front cap will burn through it.",
-      "This is the lowest priority item on the whole list. Skipping it costs appearance, not integrity.",
+      "No abrasive polish, no compound, no paste wax. The walls are painted aluminum, not gelcoat, so a scratch cannot be polished out the way it can on fiberglass.",
+      "Model I owners report declining the dealer ceramic coating upsell at roughly $3,900 and being happy with this instead.",
     ],
   },
-
-  // ======================= ROOF & SEALS =======================
 
   "inspect-roof-seams-and-sealants": {
     lube: ["none"],
     time: "1 to 2 hours",
-    tools: ["Ladder", "Flashlight", "Self-leveling lap sealant for horizontal surfaces", "Non-sag sealant for vertical surfaces", "Denatured alcohol", "Plastic putty knife"],
+    tools: ["Ladder", "Flashlight", "Self-leveling lap sealant", "Non-sag sealant for vertical joints", "Denatured alcohol", "Plastic putty knife"],
     steps: [
-      "Confirm the roof is rated to walk before getting on it, and stay over the trusses.",
-      "Work the whole perimeter first, then every penetration: vents, fans, AC shroud, antenna, solar mounts, refrigerator vent, plumbing stacks, and the front and rear caps.",
-      "You are looking for cracking, chalking, lifted edges, pinholes, and any place the sealant has pulled away from the substrate.",
-      "Clean any area you plan to reseal with denatured alcohol and let it flash off.",
-      "Self-leveling sealant on horizontal surfaces only. Non-sag on the vertical walls and cap seams. They are not interchangeable.",
-      "Match the sealant chemistry to the existing bead and the roof membrane type. Wrong chemistry will not bond and will lift within a season.",
+      "The slide roofs are reinforced and walkable. The membrane is slippery when wet, so go up dry.",
+      "Work the whole perimeter first, then every penetration: both Maxxair fans, the AC shrouds, the Winegard antenna, solar mounts and the junction box, plumbing stacks, and the front and rear cap seams.",
+      "Look for cracking, chalking, lifted edges, pinholes, and anywhere the bead has pulled away from the substrate. The roof-to-side-trim transition is the documented Brinkley trouble spot; owners report the bead pulling back there.",
+      "Clean any area you plan to reseal with denatured alcohol and let it flash off. Plastic scraper only, and do not chase the cap-to-roof transitions.",
+      "Self-leveling on horizontal surfaces, non-sag on vertical and sloped joints. They are not interchangeable.",
+      "Do not reseal over failed sealant. Pull the loose material first or you are just capping the leak path.",
     ],
-    specs: [],
+    specs: [
+      ["Brinkley spec, flat roof", "AlphaThane 5121 self-leveling"],
+      ["Brinkley spec, roof-to-trim", "AlphaThane 5160 non-sag"],
+      ["On hand", "Everbond RV Roof Lap Sealant, white, 10.1 oz, water-based self-leveling"],
+    ],
     watch: [
       "This is the single highest-value item on the whole list. Water intrusion is what totals trailers, and it does it slowly and invisibly.",
-      "Solar mounts are the newest penetrations on this roof, so they get extra attention.",
-      "Do not reseal over failed sealant. Pull the loose material first or you are just capping the leak path.",
+      "Brinkley Customer Care specifies AlphaThane 5121 for flat roof areas and 5160 non-sag for the roof-to-trim transition, and has said on the forum they have no other approved alternatives. Alpha Systems is a Patrick Industries company; Lippert only distributes it.",
+      "The Everbond on hand is a water-based, fiber-infused self-leveling lap sealant rated for EPDM, TPO, aluminum, and metal. It is a reasonable product, but it is a different chemistry from the 100 percent solids polyurethane Brinkley used, and adhesion of a water-based sealant over a cured polyurethane bead is not something Alpha or Brinkley have validated. Sensible split: use Everbond freely on aftermarket penetrations you added yourself, and keep a tube of 5121 for touching up factory beads that sit under the 25-year seal warranty.",
+      "Brinkley engineered this roof to need no sealant at all, and the prototype Z reportedly still runs with none. The bead is belt and suspenders over the primary seal, so failures show up slowly. Inspect and touch up; do not strip and redo.",
+      "One owner found factory sealant bonded well to the membrane but poorly to a solar junction box. Check aftermarket roof hardware separately and more often.",
+      "Brinkley's warranty guide requires the owner to inspect and maintain visible exterior sealants regularly, so log this one.",
     ],
   },
 
@@ -506,6 +545,34 @@ export const GUIDANCE = {
     shop: true,
   },
 
+  "grease-suspension-wet-bolts": {
+    lube: ["chassis-grease"],
+    avoid: "Do not substitute a spray lube or a light oil. This is a pumped grease joint and nothing else reaches the bushing.",
+    time: "45 min",
+    tools: ["Grease gun with a locking coupler and flexible hose", "GC-LB chassis grease cartridge", "Rags", "Bottle jack and stands", "Torque wrench", "Flashlight"],
+    steps: [
+      "Count every zerk before you start. Tandem axle on the Road Armor system means about 14 fittings, seven per side, and several hide behind the tires. A missed fitting is the same as never greasing it.",
+      "Wipe the gun nozzle and each zerk clean. Dirt pumped into a bushing grinds like sandpaper.",
+      "Lock the coupler on and pump about two strokes, then keep pumping until fresh grease overflows at the bushing edge. That overflow is the proof the new grease traveled through the bolt and displaced the old. Stopping when the handle firms up does almost nothing.",
+      "If a fitting refuses grease, do not crank harder until the zerk blows out. The trailer's weight is pressing the bushing against the bolt's exit hole. Lift the frame to unload the suspension and try again.",
+      "Wipe the excess and move on. Repeat for every fitting.",
+      "While you are down there, check the shackles, bushings, and spring eyes for shiny wear marks, rust streaks, or a bolt sitting off-center.",
+    ],
+    specs: [
+      ["Interval", "3,000 miles or 3 months, whichever first"],
+      ["Grease", "NLGI #2 lithium complex EP, marked GC-LB"],
+      ["Fitting count", "About 14, seven per side"],
+      ["Lug nut torque", "115 ft-lbs"],
+    ],
+    watch: [
+      "Brinkley's Sec.19 tables do not mention wet bolts at all. This interval comes from Lippert TI-340 and Dexter's 3,000 mile suspension lube spec, not from Brinkley.",
+      "At roughly 1,486 estimated towed miles only the calendar trigger will ever fire on this rig. Do not wait for the mileage number.",
+      "Sheared wet bolts are a live failure mode. An owner found three of them during a routine torque check after a two month trip, and they spun freely rather than looking broken. Check by feel, not by eye.",
+      "Roughly half of 14 fittings refusing grease is a common owner report. Brinkley has shipped replacement wet bolts free under a case number.",
+      "Carry spare wet bolts, locking nuts, and bronze bushings. Multiple owners keep a full set aboard.",
+    ],
+  },
+
   "clean-and-lube-axle-and-suspension-moving-parts": {
     lube: ["dry-ptfe", "white-lithium"],
     avoid: "No wet grease on anything that sits in the road spray path unless it is inside a bushing housing. It becomes a grit magnet.",
@@ -640,27 +707,29 @@ export const GUIDANCE = {
     ],
   },
 
-  "water-heater-anode-rod-check": {
-    lube: ["ptfe-tape"],
-    time: "45 min",
-    tools: ["Socket for the anode, commonly 1-1/16 inch", "PTFE thread tape", "Tank flush wand", "Bucket"],
+  "descale-tankless-water-heater": {
+    lube: ["none"],
+    time: "2 hours, most of it setup and circulation",
+    tools: ["Transfer or submersible pump", "5 gallon bucket", "Two washing machine hoses", "3 to 4 gallons white vinegar", "Flashlight"],
     steps: [
-      "First, confirm the i275 actually has an anode. Suburban tank heaters have a steel tank and an anode rod. Atwood and Dometic aluminum tanks do not, and tankless units like the Furrion or the Truma AquaGo have nothing to check here. If yours is tankless, mark this task not applicable and stop.",
-      "Turn the heater off, both gas and electric, and let the tank cool completely. Scalding is a real risk here.",
-      "Kill the water supply and open a hot tap plus the pressure relief valve to break the vacuum.",
-      "Remove the anode and let the tank drain fully.",
-      "Flush the tank with a wand until the water runs clear. Sediment is what kills heating elements.",
-      "Inspect the rod. Replace it when it is down to roughly half its original diameter or the steel core wire is exposed.",
-      "Wrap the threads with PTFE tape and reinstall. Snug, not gorilla tight.",
-      "Refill with the heater off, purge air at a hot tap until it runs steady, and only then turn the heater back on. Firing a dry element destroys it instantly.",
+      "Confirm which unit you actually have by reading the label on the heater, not the owner's manual. A Brinkley owner found his manual listed an RVMP Flex Temp while the installed unit was a Furrion FWH09AFA. The two flush procedures differ and the RVMP is the more involved one.",
+      "Get access to the back of the unit. It sits behind the On-Command panel, and on this floorplan that means going in through the pass-through and working around the 65 ft retractable hose reel. Owners report having to temporarily move the reel. Photograph everything before disconnecting.",
+      "Power off at the unit. Close the cold inlet, the hot outlet, and the gas valve.",
+      "Disconnect the hot and cold lines at the heater and connect the pump hoses in their place.",
+      "Circulate white vinegar from the bucket through the heat exchanger for about an hour.",
+      "Flush with fresh water until there is no vinegar smell at a hot tap.",
+      "Reconnect the water lines, tighten carefully, reopen cold then hot then gas, restore power, and check every joint for leaks.",
     ],
     specs: [
-      ["Replace at", "Roughly 50 percent consumed or core wire showing"],
-      ["Thread sealing", "PTFE tape, 3 to 4 wraps"],
+      ["Solution", "Food-grade white vinegar, 3 to 4 gallons"],
+      ["Circulation", "About 1 hour"],
+      ["Frequency", "Annually, more often on hard water"],
     ],
     watch: [
-      "Never turn the heater on before you have confirmed the tank is full and purged. This is the most common way people destroy a water heater.",
-      "Soft water and heavily chlorinated water both eat an anode faster. Check more often if you have been on either.",
+      "There is no anode rod on this rig. This task replaced the anode check, which did not apply to a tankless unit.",
+      "Never use a harsh chemical descaler. Vinegar is a weak acid that dissolves calcium without attacking the internals.",
+      "Rotten egg smell on the hot side only, with clean cold water, means do this sooner.",
+      "Winterizing trap: the tankless is easy to miss at the low point drains. An owner bypassed his, the turbo mixer froze and burst, and the unit was a write-off. Confirm the heater itself is drained.",
     ],
   },
 
