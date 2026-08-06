@@ -198,7 +198,7 @@ footer b{color:var(--mid);font-weight:600}
 <div class="wrap">
   <p class="eyebrow" id="asof">Reading Notion</p>
   <h1>Rig maintenance status</h1>
-  <p class="sub">Live from the three Notion databases. Every load reads the current Status, days remaining, and miles remaining straight from the source, so this page cannot go stale. Tap any item for the product, the tools, the steps, and the numbers for this rig specifically.</p>
+  <p class="sub">Everything the trailer and truck need, and when. Red means it is overdue, amber means it is coming up soon. Tap any item to see exactly which product to use, what tools you need, and the steps.</p>
   <div id="app">
     <div class="state">
       <h2>Loading</h2>
@@ -209,12 +209,11 @@ footer b{color:var(--mid);font-weight:600}
     </div>
   </div>
   <footer id="foot" hidden>
-    <b>How to read this.</b> Overdue and Due Soon come from the Status formula in Notion: at or below zero days or miles is overdue, within 30 days or 1,000 miles is due soon.<br>
-    <b>Guidance lives in code, not Notion.</b> Every item expands to show which product it takes, what to avoid, the steps, and the specs. That content is in <b>api/guidance.js</b>, keyed to the task title. Rename a task in Notion and its guidance stops matching, and a warning appears at the top of this page.<br>
-    <b>No-due-date items are not shown.</b> Every Trip, Before/After Storage, and As Needed tasks still exist in Notion but are filtered out here, because a board full of items that can never come due trains you to stop reading the board.<br>
-    <b>The baseline.</b> Items marked BASELINE have never actually been serviced. The trailer arrived with no service history, so a clock-start entry dated 2025-07-15 gives every interval something to measure from. It is not a record of work performed.<br>
-    <b>Trailer mileage is an estimate</b> of towed miles starting from zero, so lean on the calendar triggers rather than the mileage ones on the trailer.<br>
-    <b>Generator items show as never logged on purpose.</b> The Champion 4000W was bought new and separately, so its clock does not start with the trailer.
+    <b>The colours.</b> Red is overdue. Amber is due within the next month. Green is fine for now. Grey means it has never been done.<br>
+    <b>Tap anything to open it.</b> Each item tells you which product to use and what it looks like, what tools to grab, and the steps in order.<br>
+    <b>Some items say BASELINE.</b> That means it has not actually been done yet. The trailer came to us with no service records, so those are starting from scratch.<br>
+    <b>Trailer miles are an estimate.</b> The trailer has no real odometer, so go by the dates rather than the mileage on trailer items.<br>
+    <b>The generator items are meant to look undone.</b> The generator was bought separately from the trailer, so its schedule starts on its own.
   </footer>
 </div>
 
@@ -355,8 +354,8 @@ function lubeCard(l){
 
 function detailHTML(t){
   const g=t.guidance;
-  if(!g) return '<div class="detail"><p class="nogo">No guidance written for this task yet. '+
-    'Add an entry keyed <code>'+esc(slug(t.task))+'</code> to <code>api/guidance.js</code>.</p></div>';
+  if(!g) return '<div class="detail"><p class="nogo">Step by step instructions have not been written for this one yet. '+
+    'Ask Brian before starting it.</p></div>';
 
   let h='<div class="detail">';
 
@@ -369,9 +368,6 @@ function detailHTML(t){
   if(g.lube&&g.lube.length){
     h+='<div class="dblock"><h4>What to lubricate it with</h4><div class="lubegrid">'+
       g.lube.map(lubeCard).join("")+'</div></div>';
-  }
-  if(g.avoid){
-    h+='<div class="dblock"><h4>Do not use</h4><div class="avoid">'+esc(g.avoid)+'</div></div>';
   }
   if(g.tools&&g.tools.length){
     h+='<div class="dblock"><h4>What you need</h4><div class="tools">'+
