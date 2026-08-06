@@ -198,7 +198,7 @@ footer b{color:var(--mid);font-weight:600}
 <div class="wrap">
   <p class="eyebrow" id="asof">Reading Notion</p>
   <h1>Rig maintenance status</h1>
-  <p class="sub">Live from the three Notion databases. Every load reads the current Status, days remaining, and miles remaining straight from the source, so this page cannot go stale. Tap any item for the lubricant, the tools, the steps, and the numbers for this rig specifically.</p>
+  <p class="sub">Live from the three Notion databases. Every load reads the current Status, days remaining, and miles remaining straight from the source, so this page cannot go stale. Tap any item for the product, the tools, the steps, and the numbers for this rig specifically.</p>
   <div id="app">
     <div class="state">
       <h2>Loading</h2>
@@ -210,7 +210,7 @@ footer b{color:var(--mid);font-weight:600}
   </div>
   <footer id="foot" hidden>
     <b>How to read this.</b> Overdue and Due Soon come from the Status formula in Notion: at or below zero days or miles is overdue, within 30 days or 1,000 miles is due soon.<br>
-    <b>Guidance lives in code, not Notion.</b> Every item expands to show which lubricant it takes, what to avoid, the steps, and the specs. That content is in <b>api/guidance.js</b>, keyed to the task title. Rename a task in Notion and its guidance stops matching, and a warning appears at the top of this page.<br>
+    <b>Guidance lives in code, not Notion.</b> Every item expands to show which product it takes, what to avoid, the steps, and the specs. That content is in <b>api/guidance.js</b>, keyed to the task title. Rename a task in Notion and its guidance stops matching, and a warning appears at the top of this page.<br>
     <b>No-due-date items are not shown.</b> Every Trip, Before/After Storage, and As Needed tasks still exist in Notion but are filtered out here, because a board full of items that can never come due trains you to stop reading the board.<br>
     <b>The baseline.</b> Items marked BASELINE have never actually been serviced. The trailer arrived with no service history, so a clock-start entry dated 2025-07-15 gives every interval something to measure from. It is not a record of work performed.<br>
     <b>Trailer mileage is an estimate</b> of towed miles starting from zero, so lean on the calendar triggers rather than the mileage ones on the trailer.<br>
@@ -227,7 +227,7 @@ const BLURB={
  "On Track":"Serviced recently enough that nothing is pending.",
  "Never Logged":"No service entry exists yet, so there is nothing to measure an interval from."
 };
-let DATA=null, veh="all", q="", activeStatus=null, open=new Set(), lubeOpen=false;
+let DATA=null, veh="all", q="", activeStatus=null, open=new Set();
 
 // Tasks logged during this page session, so the row can show Logged immediately
 // without waiting for Notion's rollups to recompute.
@@ -428,16 +428,6 @@ function rowHTML(t){
 
 function slug(s){return String(s||"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"");}
 
-function refHTML(){
-  if(!DATA.lube) return "";
-  const ids=Object.keys(DATA.lube).filter(k=>k!=="none");
-  return '<div class="ref"><button id="refbtn" aria-expanded="'+lubeOpen+'">'+
-    '<h2>Lubricant reference</h2><span class="toggle">'+(lubeOpen?"Hide":"Show")+' \u00b7 '+ids.length+' products</span></button>'+
-    (lubeOpen?'<div class="body"><p>The shopping list. Using one product everywhere is the mistake: petroleum oil degrades rubber and plastic, and anything that stays wet on an exterior part collects road grit and becomes grinding paste.</p>'+
-      '<div class="lubegrid">'+ids.map(k=>lubeCard(DATA.lube[k])).join("")+'</div></div>':"")+
-    '</div>';
-}
-
 function listHTML(){
   const rows=DATA.tasks.filter(t=>
     (veh==="all"||vehKey(t)===veh)&&
@@ -468,7 +458,7 @@ function warnHTML(){
 
 function render(){
   document.getElementById("app").innerHTML=
-    warnHTML()+rigsHTML()+railHTML()+nextHTML()+refHTML()+listHTML();
+    warnHTML()+rigsHTML()+railHTML()+nextHTML()+listHTML();
   document.getElementById("foot").hidden=false;
   wire();
 }
@@ -482,8 +472,6 @@ function wire(){
   document.querySelectorAll(".chip").forEach(c=>c.addEventListener("click",()=>{
     activeStatus=activeStatus===c.dataset.status?null:c.dataset.status; render();
   }));
-  const rb=document.getElementById("refbtn");
-  if(rb) rb.addEventListener("click",()=>{lubeOpen=!lubeOpen; render();});
   document.querySelectorAll(".row[data-id]").forEach(r=>{
     r.addEventListener("click",e=>{
       if(e.target.closest("[data-log],.logbtn")) return;
