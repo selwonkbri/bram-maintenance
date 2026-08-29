@@ -1,7 +1,13 @@
 // Reads the three RV maintenance databases from Notion and returns one JSON payload.
 // The token never reaches the browser. It lives in the NOTION_TOKEN environment variable.
 
-import { guidanceFor, RIG } from "./guidance.js";
+import {
+  guidanceFor,
+  guidanceKeyFor,
+  auditLubeRefs,
+  GUIDANCE_KEYS,
+  RIG,
+} from "./guidance.js";
 import { odometerPolicy, odometerRequired, todayISO } from "../lib/policy.js";
 
 const NOTION = "https://api.notion.com/v1";
@@ -272,7 +278,7 @@ export default async function handler(req, res) {
       const realWork = logIds.filter((id) => id !== baselineId);
       const baselineOnly = Boolean(baselineId) && logIds.includes(baselineId) && realWork.length === 0;
 
-      const guidance = guidanceFor(title);
+      const guidance = guidanceFor(title, pick(t, ["Guidance Key"]));
 
       const veh = vehicles[vehicleId];
       const policy = odometerPolicy({
@@ -345,6 +351,32 @@ export default async function handler(req, res) {
         `No guidance written for ${unguided.length} task${unguided.length === 1 ? "" : "s"}: ${unguided
           .map((t) => t.task)
           .join(", ")}. Either the task is new or its title changed in Notion, which breaks the slug match in api/guidance.js.`
+      );
+    }
+
+    // Reverse of the check above: guidance written for a key that no task resolves to.
+    // Keyed off taskRows, not tasks, because tasks has already had EXCLUDED_TYPES
+    // filtered out and guidance for an Every Trip or As Needed item is legitimate.
+    const liveKeys = new Set(
+      taskRows.map((t) =>
+        guidanceKeyFor(pick(t, ["Task"]) || "", pick(t, ["Guidance Key"]))
+      )
+    );
+    const orphans = GUIDANCE_KEYS.filter((k) => !liveKeys.has(k));
+    if (orphans.length) {
+      warnings.push(
+        `Guidance written for ${orphans.length} key${orphans.length === 1 ? "" : "s"} that no task matches: ${orphans.join(
+          ", "
+        )}. A task was probably renamed in Notion. Paste the key into that task's Guidance Key property to reconnect it.`
+      );
+    }
+
+    const badLube = auditLubeRefs();
+    if (badLube.length) {
+      warnings.push(
+        `${badLube.length} guidance entr${badLube.length === 1 ? "y references a lubricant" : "ies reference lubricants"} missing from the LUBE catalogue: ${badLube
+          .map((b) => `${b.key} -> ${b.id}`)
+          .join(", ")}. These render with no lubricant card and fail silently.`
       );
     }
 

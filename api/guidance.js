@@ -181,6 +181,27 @@ export const LUBE = {
     examples: "Pumps RV antifreeze straight into the plumbing",
     note: "Screws onto an antifreeze jug.",
   },
+  "valve-lube": {
+    name: "Thetford RV Drain Valve Lubricant",
+    form: "White bottle with a blue label, 8 oz",
+    where: "Black and gray tank blade valve seals",
+    examples: "Poured down the toilet and the drains with the valves closed",
+    note: "Formulated to stay put in waste water. Silicone slide lube is the wrong chemistry here and will wash straight off the seal.",
+  },
+  "bearing-grease": {
+    name: "Wheel bearing grease, NLGI #2 lithium complex",
+    form: "Grease cartridge or tub",
+    where: "Trailer wheel bearings only, packed by hand or with a bearing packer",
+    examples: "Look for NLGI #2 and a wheel bearing rating on the label",
+    note: "NOT the same as the GC-LB chassis grease used on the wet bolts. Do not mix greases in a hub. If you do not know what is in there, clean the bearing completely before repacking.",
+  },
+  "dielectric": {
+    name: "Dielectric grease",
+    form: "Small squeeze tube, clear silicone paste",
+    where: "Battery terminals and lug connections, after they are clean and tight",
+    examples: "Thin smear over the finished connection",
+    note: "Goes on AFTER the connection is torqued, not between the terminal and the post. It seals out moisture, it does not conduct.",
+  },
 };
 
 // ---------------------------------------------------------------------------
@@ -200,6 +221,67 @@ export const RIG = {
 
 export const GUIDANCE = {
   // ======================= EXTERIOR =======================
+
+  "confirm-baggage-doors-seal-tight-and-are-not-leaking": {
+    lube: ["seal-conditioner"],
+    time: "30 min",
+    tools: [
+      "3-IN-ONE RV Care Rubber Seal Conditioner",
+      "Dollar bill or a strip of paper",
+      "Flashlight",
+      "Rags",
+    ],
+    steps: [
+      "Open every baggage door and look at the inside of the compartment with a flashlight first. You are looking for water stains, streaking down the wall, swollen or soft floor, or a musty smell. Stains tell you it already leaks, no test needed.",
+      "Run a hand around the rubber seal on each door. It should be soft and springy. Hard, cracked, flattened, or rolled-under rubber is a failed seal.",
+      "Do the dollar bill test on each door: lay the bill across the seal, close and latch the door on it, then pull. It should drag. If it slides out clean, the door is not compressing the seal at that spot.",
+      "Walk the bill around the whole perimeter of each door, a few inches at a time. Top, both sides, bottom. Corners matter most.",
+      "Where a door fails in one spot only, check the latch and the striker before blaming the seal. Most of these are an adjustment, not a part.",
+      "Wipe the seals clean and dry, then give every one a thin coat of the 3-IN-ONE Rubber Seal Conditioner, the orange and black can with the red flip cap. Wipe off what does not soak in.",
+      "Check the hinge screws are tight while you are there. A sagging door will not seal at the top no matter how good the rubber is.",
+    ],
+    specs: [
+      ["Test", "Dollar bill should drag when pulled through the closed door"],
+      ["Seal conditioner", "3-IN-ONE RV Care Rubber Seal Conditioner, orange and black can"],
+    ],
+    watch: [
+      "Do this after a hard rain or a wash if you can. Fresh water inside the compartment is the real answer and no test beats it.",
+      "The bottom edge of the seal is where they fail first. Road spray hits it and the door weight rests on it.",
+      "A door that seals fine but has a wet floor is usually water coming in from above through a sidewall seam, not through the door.",
+      "Do not fix a marginal seal by overtightening the latch. That crushes the rubber flat and you lose the seal for good.",
+    ],
+  },
+
+  "service-morryde-stepabove-entry-steps": {
+    lube: ["dry-lube"],
+    time: "20 min",
+    tools: [
+      "B'laster Dry Lube",
+      "Socket set",
+      "Soapy water and a brush",
+      "Rags",
+    ],
+    steps: [
+      "Deploy the steps fully and set them level on solid ground.",
+      "Wash the whole assembly with soapy water and a brush. Grit in the leg joints is what wears these out, so get the sand out of the pivots and the leg tubes.",
+      "Rinse and let it dry completely. Dry lube on a wet joint just traps the water.",
+      "Spray B'laster Dry Lube into every pivot point: the three hinge points where the steps fold, both leg pivots, and the leg height adjustment collars. That is the blue and white can with the yellow cap.",
+      "Let it dry for a minute, then fold and unfold the steps four or five times to work it through.",
+      "Check the mounting bolts at the door frame. These carry your whole weight every time you get in and out, and they loosen from road vibration. Snug anything that moves.",
+      "Check the leg height adjustment is still set right for the rig at ride height, and that both legs are landing at the same length. Uneven legs put a twist through the frame.",
+      "Look at the rubber feet on the bottom of the legs. Replace them if they are torn or worn through to the metal.",
+    ],
+    specs: [
+      ["Model", "MORryde StepAbove, 3-step"],
+      ["Lubricant", "B'laster Dry Lube, blue and white can with yellow cap"],
+    ],
+    watch: [
+      "Dry lube only. Do not use a wet spray lube or WD-40 on the pivots. It holds sand and the joint grinds itself out.",
+      "The steps are not a jack. Do not use them to lift or brace anything.",
+      "Readjust the leg height whenever you change how the trailer sits. Legs set for one site can be off enough at the next to put load on the door frame instead of the ground.",
+      "If a step wobbles side to side after the bolts are tight, the leg pivot is worn and the part needs replacing, not more lube.",
+    ],
+  },
 
   "lube-entry-door-hinges": {
     lube: ["dry-lube"],
@@ -698,6 +780,39 @@ export const GUIDANCE = {
   },
 
   // ======================= PLUMBING & WATER =======================
+
+  "lubricate-black-and-gray-tank-valve-seals": {
+    lube: ["valve-lube", "dry-lube"],
+    time: "15 min plus a dump cycle",
+    tools: [
+      "Thetford RV Drain Valve Lubricant",
+      "B'laster Dry Lube",
+      "Gloves",
+      "Rags",
+    ],
+    steps: [
+      "Do this right after a dump and flush, with the tanks empty and both blade valves closed.",
+      "Put a few gallons of fresh water into the black tank through the toilet, and a few gallons into each gray tank through a drain.",
+      "Pour the Thetford valve lubricant in behind it. Roughly 4 oz per tank. Black goes down the toilet, gray goes down a sink or the shower drain.",
+      "Leave the valves closed and let it sit against the seals. Overnight is ideal, and a travel day is better still since the water sloshing around coats the blade and the seal faces.",
+      "Dump normally at the next opportunity. The lubricant goes out with it, having done its work on the way.",
+      "Now do the outside half. Wipe the exposed valve rods clean where they slide through the guide, then hit each one with B'laster Dry Lube, the blue and white can with the yellow cap.",
+      "Work each valve fully open and fully closed three or four times to spread it along the rod.",
+      "Wipe the rods off. Dry lube dries to a film, so anything still wet is excess that will collect road grit.",
+    ],
+    specs: [
+      ["Tank lubricant", "Thetford RV Drain Valve Lubricant, white bottle with blue label"],
+      ["Amount", "About 4 oz per tank"],
+      ["Rod lubricant", "B'laster Dry Lube on the exposed rod only"],
+      ["Tanks", "Black 40 gal, gray 75 gal"],
+    ],
+    watch: [
+      "Never grease the rod where it enters the valve body and never spray anything oily at the blade. It pulls grit past the seal, which is exactly the wear you are trying to prevent.",
+      "Silicone slide lube is the wrong product here. It is not formulated to stay on a seal sitting in waste water and it washes off.",
+      "A valve that is getting stiff to pull is telling you the seal is drying out. Doing this on schedule is much cheaper than a valve replacement, which means dropping the underbelly.",
+      "If a valve will not seat fully and you get a drip at the cap, that is debris on the blade, not a lubrication problem. Flush the tank before you pull harder on the handle.",
+    ],
+  },
 
   "sanitize-fresh-water-system": {
     lube: ["none"],
@@ -1273,8 +1388,17 @@ export const GUIDANCE = {
 // Lookup
 // ---------------------------------------------------------------------------
 
-export function guidanceFor(title) {
-  const g = GUIDANCE[slugify(title)];
+// Resolve a task to its guidance key. An explicit "Guidance Key" from Notion wins;
+// otherwise fall back to the slug of the title. This is what lets a task be renamed
+// in Notion without breaking its guidance, and it is deliberately shared by
+// guidanceFor() and the orphan check so the two can never disagree.
+export function guidanceKeyFor(title, explicitKey) {
+  const k = (explicitKey || "").trim();
+  return k || slugify(title);
+}
+
+export function guidanceFor(title, explicitKey) {
+  const g = GUIDANCE[guidanceKeyFor(title, explicitKey)];
   if (!g) return null;
   return {
     ...g,
@@ -1284,4 +1408,20 @@ export function guidanceFor(title) {
   };
 }
 
-export const GUIDANCE_COUNT = Object.keys(GUIDANCE).length;
+// Every lube id referenced by a guidance entry that has no matching LUBE record.
+// These fail silently at render time: guidanceFor() filters unknown ids out, so the
+// task shows up with no lubricant card and nothing anywhere says why.
+// "none" is the intentional no-lubricant sentinel and is not a broken reference.
+export function auditLubeRefs() {
+  const bad = [];
+  for (const [key, g] of Object.entries(GUIDANCE)) {
+    for (const id of g.lube || []) {
+      if (id !== "none" && !LUBE[id]) bad.push({ key, id });
+    }
+  }
+  return bad;
+}
+
+export const GUIDANCE_KEYS = Object.keys(GUIDANCE);
+
+export const GUIDANCE_COUNT = GUIDANCE_KEYS.length;
