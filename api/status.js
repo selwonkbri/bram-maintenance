@@ -31,6 +31,15 @@ const BASELINE_TITLE = "Baseline: trailer placed in service (no service performe
 // Interval types with no due date. These are excluded from the dashboard entirely.
 // They still exist in Notion, they just do not belong on a status board, because a
 // board full of items that can never be due trains you to ignore the board.
+// How far into its own interval a task must be before it counts as due soon.
+//
+// This replaces a fixed thirty day lookahead. A fixed window is unusable when
+// intervals span two orders of magnitude: a monthly task is always inside thirty
+// days, so it was permanently amber and the amber band stopped carrying any
+// information. Proportional means a monthly task surfaces around day 24 and an
+// annual task around month 10, and each is quiet for the other 80% of its cycle.
+const DUE_SOON_AT = 0.8;
+
 const EXCLUDED_TYPES = new Set(["Every Trip", "Before/After Storage", "As Needed"]);
 
 // Fallback only. `shop` now comes from the guidance module. This list catches any
@@ -155,20 +164,40 @@ function pick(row, names) {
   return null;
 }
 
-function classify(rawStatus, intervalType, daysRem, milesRem, hasHistory) {
+// Status is decided here, from the elapsed fraction, not from Notion's Status
+// formula. Notion's string is kept only as a fallback for the case where no
+// interval arithmetic is possible at all. Two reasons for that ordering: the
+// fraction is testable in this repo, and a task that has never been serviced has
+// no fraction to compute, which is the one thing Notion genuinely knows better.
+function classify(rawStatus, elapsed, hasHistory) {
+  if (!hasHistory) return "Never Logged";
+
+  if (typeof elapsed === "number" && Number.isFinite(elapsed)) {
+    if (elapsed >= 1) return "OVERDUE";
+    if (elapsed >= DUE_SOON_AT) return "Due Soon";
+    return "On Track";
+  }
+
+  // No usable interval figures. Defer to whatever Notion says.
   const s = String(rawStatus || "").toLowerCase();
+  if (s.includes("never")) return "Never Logged";
   if (s.includes("overdue")) return "OVERDUE";
   if (s.includes("due soon") || s.includes("soon")) return "Due Soon";
-  if (s.includes("never")) return "Never Logged";
-  if (s.includes("track") || s.includes("ok")) return "On Track";
-  // Notion gave us nothing usable. Fall back to the same arithmetic the formula uses.
-  if (!hasHistory) return "Never Logged";
-  const vals = [daysRem, milesRem].filter((v) => typeof v === "number");
-  if (!vals.length) return "On Track";
-  if (vals.some((v) => v <= 0)) return "OVERDUE";
-  if ((typeof daysRem === "number" && daysRem <= 30) ||
-      (typeof milesRem === "number" && milesRem <= 1000)) return "Due Soon";
   return "On Track";
+}
+
+// Which cadence bucket a task belongs to, used to collapse the quiet items in the
+// UI so that seven separate monthly rows read as one line instead of seven.
+function cadenceOf(intervalType, months, miles) {
+  if (typeof months === "number" && months > 0) {
+    if (months <= 1) return "Monthly";
+    if (months <= 3) return "Quarterly";
+    if (months <= 6) return "Twice a year";
+    if (months <= 12) return "Annual";
+    return "Multi-year";
+  }
+  if (typeof miles === "number" && miles > 0) return "By mileage";
+  return "Other";
 }
 
 function intervalLabel(type, miles, months) {
@@ -287,11 +316,19 @@ export default async function handler(req, res) {
       });
       const mustAsk = odometerRequired(policy, veh ? veh.odometerUpdated : null, today);
 
-      const status = classify(
-        rawStatus, intervalType,
+      const elapsed = elapsedFraction(
+        intervalType,
+        typeof months === "number" ? months : null,
+        typeof miles === "number" ? miles : null,
         typeof daysRem === "number" ? daysRem : null,
-        typeof milesRem === "number" ? milesRem : null,
-        logIds.length > 0
+        typeof milesRem === "number" ? milesRem : null
+      );
+
+      const status = classify(rawStatus, elapsed, logIds.length > 0);
+      const cadence = cadenceOf(
+        intervalType,
+        typeof months === "number" ? months : null,
+        typeof miles === "number" ? miles : null
       );
 
       return {
@@ -326,11 +363,8 @@ export default async function handler(req, res) {
         guidance,
         odometerTier: policy.tier,
         odometerRequired: mustAsk,
-        elapsed: elapsedFraction(
-          intervalType, months, miles,
-          typeof daysRem === "number" ? daysRem : null,
-          typeof milesRem === "number" ? milesRem : null
-        ),
+        elapsed,
+        cadence,
       };
     });
 
