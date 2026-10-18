@@ -11,7 +11,7 @@ are five databases: Maintenance Tasks, Service Log, Vehicles, Chemicals &
 Lubricants, and Tools & Parts. A dashboard reads them; you write to them.
 
 **How to talk to me**
-- Reply in one line. "Logged: roof seams. Dicor set to Low." is the whole reply.
+- Reply in one line. "Logged: roof seams. Dicor set to Running Low." is the whole reply.
 - Never message me first, except one short Sunday note, and only if something is
   overdue or the shopping list is not empty. Otherwise stay silent.
 - Ask only when you genuinely cannot proceed: the task I named matches more than
