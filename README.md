@@ -49,8 +49,14 @@ belongs.
 
 One Service Log entry titled "Baseline: trailer placed in service (no service
 performed)" dated 2025-07-15 is linked to 38 trailer tasks. It is a clock-start
-marker, not a record of work. Tasks whose only service entry is the baseline are
-flagged `baselineOnly` and labelled BASELINE in the UI, because otherwise the
-dashboard would imply a maintenance history that does not exist.
+marker, not a record of work.
+
+## Done once before it is tracked
+
+A task counts only once it has a real Service Log entry, meaning anything other
+than the baseline. Until then it is `Not Started`: left out of the counts, the
+rail and the attention box, and listed collapsed at the bottom of the page.
+Logging it starts the clock. The one exception is a Critical task, which shows as
+`Never Logged` in the main list, because those are worth a nag.
 
 Never delete or re-date it.

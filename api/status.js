@@ -169,8 +169,13 @@ function pick(row, names) {
 // interval arithmetic is possible at all. Two reasons for that ordering: the
 // fraction is testable in this repo, and a task that has never been serviced has
 // no fraction to compute, which is the one thing Notion genuinely knows better.
-function classify(rawStatus, elapsed, hasHistory) {
-  if (!hasHistory) return "Never Logged";
+//
+// A task is only tracked once it has been done for real at least once. Until then
+// it has no honest start point: the baseline marker is a guess, and counting down
+// from it put a backlog of never-done routine items in red. Untracked Critical
+// tasks still show as Never Logged, because those are the ones worth a nag.
+function classify(rawStatus, elapsed, hasRealWork, priority) {
+  if (!hasRealWork) return priority === "Critical" ? "Never Logged" : "Not Started";
 
   if (typeof elapsed === "number" && Number.isFinite(elapsed)) {
     if (elapsed >= 1) return "OVERDUE";
@@ -324,7 +329,9 @@ export default async function handler(req, res) {
         typeof milesRem === "number" ? milesRem : null
       );
 
-      const status = classify(rawStatus, elapsed, logIds.length > 0);
+      const tracked = realWork.length > 0;
+      const priority = pick(t, ["Priority"]);
+      const status = classify(rawStatus, elapsed, tracked, priority);
       const cadence = cadenceOf(
         intervalType,
         typeof months === "number" ? months : null,
@@ -338,7 +345,7 @@ export default async function handler(req, res) {
         vehicleId,
         vehicleName: vehicles[vehicleId] ? vehicles[vehicleId].name : "Unassigned",
         category: pick(t, ["Category"]),
-        priority: pick(t, ["Priority"]),
+        priority,
         source: pick(t, ["Source"]),
         brinkleySchedule: pick(t, ["Brinkley Schedule"]),
         partsSpecs: pick(t, ["Parts & Specs"]),
@@ -363,7 +370,9 @@ export default async function handler(req, res) {
         guidance,
         odometerTier: policy.tier,
         odometerRequired: mustAsk,
-        elapsed,
+        tracked,
+        // An interval measured from the baseline marker is not a real figure.
+        elapsed: tracked ? elapsed : null,
         cadence,
       };
     });
@@ -379,7 +388,7 @@ export default async function handler(req, res) {
         `Notion returned no Status value on ${blankStatus} of ${tasks.length} tasks. The integration is probably missing access to one of the three databases, so these figures were recalculated rather than read.`
       );
     }
-    const unguided = tasks.filter((t) => !t.guidance);
+    const unguided = tasks.filter((t) => t.tracked && !t.guidance);
     if (unguided.length) {
       warnings.push(
         `No guidance written for ${unguided.length} task${unguided.length === 1 ? "" : "s"}: ${unguided

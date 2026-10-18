@@ -75,6 +75,13 @@ input[type=search]:focus,.chip:focus-visible,.seg button:focus-visible,.reload:f
 
 .sect{margin-bottom:26px}
 .sect > h2{font-family:var(--disp);text-transform:uppercase;font-size:20px;letter-spacing:.04em;margin:0 0 2px;display:flex;align-items:baseline;gap:10px}
+#notstarted > summary{cursor:pointer;list-style:none}
+#notstarted > summary::-webkit-details-marker{display:none}
+#notstarted > summary h2{font-family:var(--disp);text-transform:uppercase;font-size:20px;letter-spacing:.04em;margin:0 0 2px;display:inline-flex;align-items:baseline;gap:10px;color:var(--mid)}
+#notstarted > summary h2 span{font-family:var(--mono);font-size:11px;color:var(--faint);letter-spacing:.1em}
+#notstarted > summary h2::after{content:"+";font-family:var(--mono);font-size:14px;color:var(--faint)}
+#notstarted[open] > summary h2::after{content:"\2212"}
+#notstarted > p{font-size:12.5px;color:var(--mid);margin:0 0 12px;max-width:70ch}
 .sect > h2 span{font-family:var(--mono);font-size:11px;color:var(--faint);letter-spacing:.1em}
 .sect > p{font-size:12.5px;color:var(--mid);margin:0 0 12px;max-width:70ch}
 .rows{border-top:1px solid var(--rule)}
@@ -209,24 +216,28 @@ footer b{color:var(--mid);font-weight:600}
     </div>
   </div>
   <footer id="foot" hidden>
-    <b>The colours.</b> Red is overdue. Amber is due within the next month. Green is fine for now. Grey means it has never been done.<br>
+    <b>The colours.</b> Red is overdue. Amber is coming up soon. Green is fine for now. Grey is a critical item that has never been done.<br>
     <b>Tap anything to open it.</b> Each item tells you which product to use and what it looks like, what tools to grab, and the steps in order.<br>
-    <b>Some items say BASELINE.</b> That means it has not actually been done yet. The trailer came to us with no service records, so those are starting from scratch.<br>
-    <b>Trailer miles are an estimate.</b> The trailer has no real odometer, so go by the dates rather than the mileage on trailer items.<br>
-    <b>The generator items are meant to look undone.</b> The generator was bought separately from the trailer, so its schedule starts on its own.
+    <b>Items you have never done are tucked away.</b> They sit under Not started yet at the bottom and do not count until the first time you log one.<br>
+    <b>Trailer miles are an estimate.</b> The trailer has no real odometer, so go by the dates rather than the mileage on trailer items.
   </footer>
 </div>
 
 <script>
-const COLOR={"OVERDUE":"var(--red)","Due Soon":"var(--amber)","On Track":"var(--green)","Never Logged":"var(--gray)"};
+const COLOR={"OVERDUE":"var(--red)","Due Soon":"var(--amber)","On Track":"var(--green)","Never Logged":"var(--gray)","Not Started":"var(--gray)"};
 const ORDER=["OVERDUE","Due Soon","On Track","Never Logged"];
 const BLURB={
- "OVERDUE":"Past the interval on days, miles, or both. The trailer carries a catch-up backlog from the clock-start baseline, so much of this is routine cleaning and lubrication rather than anything failing.",
+ "OVERDUE":"Past the interval on days, miles, or both.",
  "Due Soon":"Inside 30 days or 1,000 miles. Worth folding into the next trip or the next shop visit.",
  "On Track":"Serviced recently enough that nothing is pending.",
- "Never Logged":"No service entry exists yet, so there is nothing to measure an interval from."
+ "Never Logged":"Critical, and never done. Do it once and it starts tracking."
 };
-let DATA=null, veh="all", q="", activeStatus=null, open=new Set();
+let DATA=null, veh="all", q="", activeStatus=null, open=new Set(), showNotStarted=false;
+
+// Tasks that have never been done are not tracked: they stay out of the counts,
+// the rail and the attention box, and sit in one collapsed list at the bottom.
+// Logging one starts its clock.
+function trackedTasks(){return DATA.tasks.filter(t=>t.status!=="Not Started");}
 
 // Tasks logged during this page session, so the row can show Logged immediately
 // without waiting for Notion's rollups to recompute.
@@ -264,7 +275,7 @@ function rigsHTML(){
   return '<div class="rigs">'+list.map(v=>{
     const odo=v.odometer==null?"unknown":num(v.odometer);
     const digits=odo.split("").map(c=>c===","?'<span class="sep">,</span>':'<span>'+esc(c)+'</span>').join("");
-    const mine=DATA.tasks.filter(t=>t.vehicleId===v.id);
+    const mine=trackedTasks().filter(t=>t.vehicleId===v.id);
     const over=mine.filter(t=>t.status==="OVERDUE").length;
     const soon=mine.filter(t=>t.status==="Due Soon").length;
     return '<div class="rig"><h2>'+esc(v.name)+'</h2><p class="spec">'+
@@ -276,8 +287,8 @@ function rigsHTML(){
 }
 
 function railHTML(){
-  const total=DATA.tasks.length||1;
-  const c={}; ORDER.forEach(s=>c[s]=DATA.tasks.filter(t=>t.status===s).length);
+  const tasks=trackedTasks(), total=tasks.length||1;
+  const c={}; ORDER.forEach(s=>c[s]=tasks.filter(t=>t.status===s).length);
   return '<div class="rail-block"><div class="rail">'+
     ORDER.map(s=>'<div style="width:'+(c[s]/total*100)+'%;background:'+COLOR[s]+'"></div>').join("")+
     '</div><div class="legend">'+ORDER.map(s=>
@@ -287,14 +298,15 @@ function railHTML(){
 }
 
 function nextHTML(){
-  const crit=DATA.tasks.filter(t=>t.priority==="Critical"&&(t.status==="OVERDUE"||t.status==="Due Soon"))
+  const tasks=trackedTasks();
+  const crit=tasks.filter(t=>t.priority==="Critical"&&(t.status==="OVERDUE"||t.status==="Due Soon"))
     .sort((a,b)=>(a.daysRemaining==null?9999:a.daysRemaining)-(b.daysRemaining==null?9999:b.daysRemaining));
-  const other=DATA.tasks.filter(t=>t.status==="OVERDUE"&&t.priority!=="Critical");
-  const shop=DATA.tasks.filter(t=>t.shop&&(t.status==="OVERDUE"||t.status==="Due Soon"));
+  const other=tasks.filter(t=>t.status==="OVERDUE"&&t.priority!=="Critical");
+  const shop=tasks.filter(t=>t.shop&&(t.status==="OVERDUE"||t.status==="Due Soon"));
 
   if(!crit.length&&!other.length&&!shop.length){
     return '<div class="next" style="border-left-color:var(--green)"><h2>Nothing pressing</h2>'+
-      '<p class="lede">No critical item is overdue or due soon, and the routine backlog is clear.</p></div>';
+      '<p class="lede">No critical item is overdue or due soon, and nothing routine is overdue.</p></div>';
   }
 
   const dueTxt=t=>{
@@ -321,7 +333,7 @@ function nextHTML(){
   }).join("");
 
   let html='<div class="next"><h2>What needs attention</h2>'+
-    '<p class="lede">Critical items are named. Routine work is grouped, because the trailer is still working through the catch-up backlog.</p>';
+    '<p class="lede">Critical items are named. Routine work is grouped by how often it comes round.</p>';
   if(crit.length) html+='<div class="grp"><h3>Critical</h3><ul>'+crit.map(t=>li(t,COLOR[t.status])).join("")+'</ul></div>';
   if(clusters) html+='<div class="grp"><h3>Routine backlog</h3><ul>'+clusters+'</ul></div>';
   if(shop.length) html+='<div class="grp"><h3>Wants a bay or a technician</h3><ul>'+shop.map(t=>li(t,"var(--slate)")).join("")+'</ul></div>';
@@ -335,7 +347,7 @@ function gaugeHTML(t){
     '<div class="tick" style="left:50%"></div></div><div class="cap">'+esc(t.intervalLabel)+' \u00b7 '+Math.round(t.elapsed*100)+'%</div></div>';
 }
 function statHTML(t){
-  if(t.status==="Never Logged") return '<div class="n" style="color:var(--gray)">Not logged</div><div class="l">No start point</div>';
+  if(t.status==="Never Logged"||t.status==="Not Started") return '<div class="n" style="color:var(--gray)">Not done yet</div><div class="l">Tracks once done</div>';
   const bits=[];
   if(t.daysRemaining!=null) bits.push([t.daysRemaining,"days"]);
   if(t.milesRemaining!=null) bits.push([t.milesRemaining,"miles"]);
@@ -401,10 +413,8 @@ function logBtn(t,wide){
 
 function rowHTML(t){
   const tags=(t.priority==="Critical"?'<span class="tag crit">Critical</span>':"")+
-    (t.shop?'<span class="tag shop">Shop</span>':"")+
-    (t.baselineOnly?'<span class="tag base">Baseline</span>':"");
-  const last=t.baselineOnly?"Clock started "+fmt(t.lastDone)+", no work done"
-    :(t.lastDone?"Last done "+fmt(t.lastDone):"Never serviced");
+    (t.shop?'<span class="tag shop">Shop</span>':"");
+  const last=t.tracked?"Last done "+fmt(t.lastDone):"Not done yet";
   const isOpen=open.has(t.id);
   const lubeHint=t.guidance&&t.guidance.lube&&t.guidance.lube.length
     ? t.guidance.lube.map(l=>l.name).join(" + ") : "";
@@ -425,10 +435,12 @@ function rowHTML(t){
 function slug(s){return String(s||"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"");}
 
 function listHTML(){
-  const rows=DATA.tasks.filter(t=>
-    (veh==="all"||vehKey(t)===veh)&&
-    (!activeStatus||t.status===activeStatus)&&
-    (!q||(t.task+" "+(t.category||"")+" "+(t.source||"")).toLowerCase().includes(q)));
+  const match=t=>(veh==="all"||vehKey(t)===veh)&&
+    (!q||(t.task+" "+(t.category||"")+" "+(t.source||"")).toLowerCase().includes(q));
+  const tracked=trackedTasks();
+  const rows=tracked.filter(t=>match(t)&&(!activeStatus||t.status===activeStatus));
+  const notStarted=activeStatus?[]:DATA.tasks.filter(t=>t.status==="Not Started"&&match(t))
+    .sort((a,b)=>a.task.localeCompare(b.task));
   const body=ORDER.map(s=>{
     const set=rows.filter(t=>t.status===s).sort((a,b)=>{
       const pa=a.priority==="Critical"?0:1,pb=b.priority==="Critical"?0:1;
@@ -443,8 +455,11 @@ function listHTML(){
     ['all','trailer','truck'].map(k=>'<button data-veh="'+k+'" aria-pressed="'+(veh===k)+'">'+
       (k==="all"?"Both":k==="trailer"?"Trailer":"Truck")+'</button>').join("")+
     '</div><input type="search" id="q" placeholder="Search tasks, categories" aria-label="Search tasks" value="'+esc(q)+'">'+
-    '<span class="count">'+rows.length+' of '+DATA.tasks.length+' items</span></div>'+
-    '<div id="list">'+(body||'<div class="empty">Nothing matches that filter. Clear the search or pick a different status.</div>')+'</div>';
+    '<span class="count">'+rows.length+' of '+tracked.length+' items</span></div>'+
+    '<div id="list">'+(body||'<div class="empty">Nothing matches that filter. Clear the search or pick a different status.</div>')+
+    (notStarted.length?'<details class="sect" id="notstarted"'+(showNotStarted?" open":"")+'><summary><h2>Not started yet <span>'+
+      notStarted.length+'</span></h2></summary><p>Never done, so not tracked. Log one when you do it and it joins the list above.</p>'+
+      '<div class="rows">'+notStarted.map(rowHTML).join("")+'</div></details>':"")+'</div>';
 }
 
 function warnHTML(){
@@ -483,6 +498,8 @@ function wire(){
     const t=DATA.tasks.find(x=>x.id===b.dataset.log);
     if(t) openLog(t);
   }));
+  const ns=document.getElementById("notstarted");
+  if(ns) ns.addEventListener("toggle",()=>{showNotStarted=ns.open;});
   const seg=document.getElementById("vehseg");
   if(seg) seg.addEventListener("click",e=>{
     const b=e.target.closest("button"); if(!b) return; veh=b.dataset.veh; render();
@@ -605,7 +622,7 @@ function stamp(){
   const t=new Date(DATA.generatedAt);
   document.getElementById("asof").innerHTML=
     '<span class="live"><span class="pip"></span>Live from Notion</span> \u00b7 read '+
-    t.toLocaleTimeString([], {hour:"numeric",minute:"2-digit"})+' \u00b7 '+DATA.tasks.length+
+    t.toLocaleTimeString([], {hour:"numeric",minute:"2-digit"})+' \u00b7 '+trackedTasks().length+
     ' tracked items <button class="reload" id="rl">Refresh</button>';
   const b=document.getElementById("rl"); if(b) b.addEventListener("click",load);
 }
