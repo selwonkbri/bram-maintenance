@@ -97,6 +97,9 @@ input[type=search]:focus,.chip:focus-visible,.seg button:focus-visible,.reload:f
 .tag.crit{color:var(--red)}
 .tag.shop{color:var(--slate)}
 .tag.base{color:var(--gray)}
+.next.shopping{border-left-color:var(--amber)}
+.stock span i{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:6px;vertical-align:0}
+.stock span b{font-weight:normal;color:var(--faint);margin-left:6px}
 .gauge{padding-top:4px}
 .gauge .track{height:6px;background:var(--surface-2);border:1px solid var(--rule);border-radius:1px;position:relative;overflow:hidden}
 .gauge .fill{height:100%;position:absolute;left:0;top:0}
@@ -232,6 +235,9 @@ const BLURB={
  "On Track":"Serviced recently enough that nothing is pending.",
  "Never Logged":"Critical, and never done. Do it once and it starts tracking."
 };
+// Stock statuses as they are in Notion, coloured the same way as task status.
+const STOCK_COLOR={"In Stock":"var(--green)","Running Low":"var(--amber)","Out":"var(--red)","To Buy":"var(--red)","Unconfirmed":"var(--gray)"};
+
 let DATA=null, veh="all", q="", activeStatus=null, open=new Set(), showNotStarted=false;
 
 // Tasks that have never been done are not tracked: they stay out of the counts,
@@ -340,6 +346,28 @@ function nextHTML(){
   return html+'</div>';
 }
 
+function shoppingHTML(){
+  const list=DATA.shopping||[];
+  if(!list.length) return "";
+  const li=i=>'<li><span class="dot" style="background:'+STOCK_COLOR[i.status]+'"></span><span>'+
+    (i.url?'<a href="'+esc(i.url)+'" target="_blank" rel="noopener">'+esc(i.name)+'</a>':esc(i.name))+
+    ' <em>'+esc(i.status.toLowerCase())+' \u00b7 '+esc(i.kind.toLowerCase())+'</em></span></li>';
+  const order={"Out":0,"To Buy":1,"Running Low":2};
+  const sorted=list.slice().sort((a,b)=>order[a.status]-order[b.status]||a.name.localeCompare(b.name));
+  return '<div class="next shopping"><h2>Shopping list</h2>'+
+    '<p class="lede">Everything marked low, out, or to buy in Notion.'+
+    (DATA.unconfirmedCount?' '+DATA.unconfirmedCount+(DATA.unconfirmedCount===1?' more item has':' more items have')+
+      ' never been confirmed either way.':"")+'</p>'+
+    '<div class="grp"><ul>'+sorted.map(li).join("")+'</ul></div></div>';
+}
+
+function stockHTML(t){
+  if(!t.supplies||!t.supplies.length) return "";
+  return '<div class="dblock"><h4>On hand</h4><div class="tools stock">'+
+    t.supplies.map(i=>'<span><i style="background:'+STOCK_COLOR[i.status]+'"></i>'+esc(i.name)+
+      '<b>'+esc(i.status)+'</b></span>').join("")+'</div></div>';
+}
+
 function gaugeHTML(t){
   if(t.elapsed==null) return '<div class="gauge"><div class="track"></div><div class="cap">'+esc(t.intervalLabel)+'</div></div>';
   const w=(Math.min(Math.max(t.elapsed,0),2)/2*100).toFixed(1);
@@ -367,7 +395,7 @@ function lubeCard(l){
 function detailHTML(t){
   const g=t.guidance;
   if(!g) return '<div class="detail"><p class="nogo">Step by step instructions have not been written for this one yet. '+
-    'Ask Brian before starting it.</p></div>';
+    'Ask Brian before starting it.</p>'+stockHTML(t)+'</div>';
 
   let h='<div class="detail">';
 
@@ -381,6 +409,7 @@ function detailHTML(t){
     h+='<div class="dblock"><h4>What to lubricate it with</h4><div class="lubegrid">'+
       g.lube.map(lubeCard).join("")+'</div></div>';
   }
+  h+=stockHTML(t);
   if(g.tools&&g.tools.length){
     h+='<div class="dblock"><h4>What you need</h4><div class="tools">'+
       g.tools.map(x=>'<span>'+esc(x)+'</span>').join("")+'</div></div>';
@@ -426,7 +455,8 @@ function rowHTML(t){
       '<div><div class="t-name">'+esc(t.task)+tags+
       '<span class="chev">'+(isOpen?"\u2212":"+")+'</span></div><div class="t-meta">'+
       esc(t.vehicleName)+' \u00b7 '+esc(t.category||"Uncategorised")+' \u00b7 '+esc(last)+'</div>'+
-      (lubeHint?'<div class="hint">Lube: '+esc(lubeHint)+'</div>':"")+'</div>'+
+      (lubeHint?'<div class="hint">Lube: '+esc(lubeHint)+'</div>':"")+
+      (t.missing&&t.missing.length?'<div class="hint" style="color:var(--red)">Need to buy: '+esc(t.missing.join(", "))+'</div>':"")+'</div>'+
       gaugeHTML(t)+'<div class="stat">'+statHTML(t)+'</div>'+
       '<div class="act">'+logBtn(t,false)+'</div></div>'+
     (isOpen?detailHTML(t):"")+'</div>';
@@ -469,7 +499,7 @@ function warnHTML(){
 
 function render(){
   document.getElementById("app").innerHTML=
-    warnHTML()+rigsHTML()+railHTML()+nextHTML()+listHTML();
+    warnHTML()+rigsHTML()+railHTML()+nextHTML()+shoppingHTML()+listHTML();
   document.getElementById("foot").hidden=false;
   wire();
 }

@@ -38,6 +38,14 @@ dashboard and the database cannot disagree.
 returns nothing, and surfaces a warning when that happens on more than half the
 tasks.
 
+## Stock
+
+`api/status.js` also reads Chemicals & Lubricants and Tools & Parts. Each task
+shows the linked items and their Status, a row says "Need to buy" when one is Out
+or To Buy, and anything Running Low, Out or To Buy goes on the shopping list.
+These two databases are read best effort: if either fails, the page still renders
+and a warning says stock is missing.
+
 ## Things that are code, not data
 
 `SHOP_PATTERNS` in `api/status.js` decides which tasks want a bay or a
