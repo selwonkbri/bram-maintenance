@@ -38,6 +38,14 @@ dashboard and the database cannot disagree.
 returns nothing, and surfaces a warning when that happens on more than half the
 tasks.
 
+## Stock
+
+`api/status.js` also reads Chemicals & Lubricants and Tools & Parts. Each task
+shows the linked items and their Status, a row says "Need to buy" when one is Out
+or To Buy, and anything Running Low, Out or To Buy goes on the shopping list.
+These two databases are read best effort: if either fails, the page still renders
+and a warning says stock is missing.
+
 ## Things that are code, not data
 
 `SHOP_PATTERNS` in `api/status.js` decides which tasks want a bay or a
@@ -49,8 +57,14 @@ belongs.
 
 One Service Log entry titled "Baseline: trailer placed in service (no service
 performed)" dated 2025-07-15 is linked to 38 trailer tasks. It is a clock-start
-marker, not a record of work. Tasks whose only service entry is the baseline are
-flagged `baselineOnly` and labelled BASELINE in the UI, because otherwise the
-dashboard would imply a maintenance history that does not exist.
+marker, not a record of work.
+
+## Done once before it is tracked
+
+A task counts only once it has a real Service Log entry, meaning anything other
+than the baseline. Until then it is `Not Started`: left out of the counts, the
+rail and the attention box, and listed collapsed at the bottom of the page.
+Logging it starts the clock. The one exception is a Critical task, which shows as
+`Never Logged` in the main list, because those are worth a nag.
 
 Never delete or re-date it.

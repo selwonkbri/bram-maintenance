@@ -26,6 +26,18 @@ const FALLBACK_DS = {
   vehicles: "b3a95e8a-10dd-4924-98c1-8d2e2c684333",
 };
 
+// What is on hand. These two are read best effort: if either cannot be reached
+// the dashboard still renders, with a warning, rather than failing outright.
+const STOCK = [
+  { db: "718213b6a80f401baf97d3fd6076f674", ds: "cb29998c-1dc9-4de7-a775-1174aa301c0b", title: "Product", kind: () => "Chemical" },
+  { db: "7e854dc066334ea7952b67b855e78114", ds: "cfcc2c05-79a6-4ed4-9c16-76fcd79c3021", title: "Item", kind: (r) => r["Kind"] || "Tool" },
+];
+
+// Statuses that put an item on the shopping list, and the subset that means the
+// job cannot be done with what is aboard.
+const SHOPPING = new Set(["Running Low", "Out", "To Buy"]);
+const MISSING = new Set(["Out", "To Buy"]);
+
 const BASELINE_TITLE = "Baseline: trailer placed in service (no service performed)";
 
 // Interval types with no due date. These are excluded from the dashboard entirely.
@@ -155,6 +167,25 @@ async function queryAll(token, dsId) {
   return rows;
 }
 
+async function loadStock(token) {
+  const lists = await Promise.all(
+    STOCK.map(async (src) => {
+      const ds = await resolveDataSource(token, src.db, src.ds);
+      const rows = await queryAll(token, ds);
+      return rows.map((r) => ({
+        id: r.id,
+        url: r.url,
+        name: pick(r, [src.title]) || "Unnamed item",
+        kind: src.kind(r),
+        status: pick(r, ["Status"]) || "Unconfirmed",
+        notes: pick(r, ["Notes"]),
+        tasks: r["Related Tasks"] || [],
+      }));
+    })
+  );
+  return lists.flat();
+}
+
 // ---------- shaping ----------
 
 function pick(row, names) {
@@ -169,8 +200,13 @@ function pick(row, names) {
 // interval arithmetic is possible at all. Two reasons for that ordering: the
 // fraction is testable in this repo, and a task that has never been serviced has
 // no fraction to compute, which is the one thing Notion genuinely knows better.
-function classify(rawStatus, elapsed, hasHistory) {
-  if (!hasHistory) return "Never Logged";
+//
+// A task is only tracked once it has been done for real at least once. Until then
+// it has no honest start point: the baseline marker is a guess, and counting down
+// from it put a backlog of never-done routine items in red. Untracked Critical
+// tasks still show as Never Logged, because those are the ones worth a nag.
+function classify(rawStatus, elapsed, hasRealWork, priority) {
+  if (!hasRealWork) return priority === "Critical" ? "Never Logged" : "Not Started";
 
   if (typeof elapsed === "number" && Number.isFinite(elapsed)) {
     if (elapsed >= 1) return "OVERDUE";
@@ -241,11 +277,22 @@ export default async function handler(req, res) {
       resolveDataSource(token, DB.vehicles, FALLBACK_DS.vehicles),
     ]);
 
-    const [taskRows, logRows, vehRows] = await Promise.all([
+    const [taskRows, logRows, vehRows, stockResult] = await Promise.all([
       queryAll(token, dsTasks),
       queryAll(token, dsLog),
       queryAll(token, dsVeh),
+      loadStock(token).then(
+        (items) => ({ items }),
+        (err) => ({ items: [], error: err })
+      ),
     ]);
+    const stock = stockResult.items;
+
+    // task id -> the stock items linked to it
+    const stockByTask = {};
+    for (const item of stock) {
+      for (const tid of item.tasks) (stockByTask[tid] = stockByTask[tid] || []).push(item);
+    }
 
     // vehicles
     const vehicles = {};
@@ -324,7 +371,9 @@ export default async function handler(req, res) {
         typeof milesRem === "number" ? milesRem : null
       );
 
-      const status = classify(rawStatus, elapsed, logIds.length > 0);
+      const tracked = realWork.length > 0;
+      const priority = pick(t, ["Priority"]);
+      const status = classify(rawStatus, elapsed, tracked, priority);
       const cadence = cadenceOf(
         intervalType,
         typeof months === "number" ? months : null,
@@ -338,7 +387,7 @@ export default async function handler(req, res) {
         vehicleId,
         vehicleName: vehicles[vehicleId] ? vehicles[vehicleId].name : "Unassigned",
         category: pick(t, ["Category"]),
-        priority: pick(t, ["Priority"]),
+        priority,
         source: pick(t, ["Source"]),
         brinkleySchedule: pick(t, ["Brinkley Schedule"]),
         partsSpecs: pick(t, ["Parts & Specs"]),
@@ -361,14 +410,23 @@ export default async function handler(req, res) {
           ? Boolean(guidance.shop)
           : SHOP_PATTERNS.some((re) => re.test(title)),
         guidance,
+        supplies: (stockByTask[t.id] || []).map(({ name, kind, status }) => ({ name, kind, status })),
+        missing: (stockByTask[t.id] || []).filter((i) => MISSING.has(i.status)).map((i) => i.name),
         odometerTier: policy.tier,
         odometerRequired: mustAsk,
-        elapsed,
+        tracked,
+        // An interval measured from the baseline marker is not a real figure.
+        elapsed: tracked ? elapsed : null,
         cadence,
       };
     });
 
     const warnings = [];
+    if (stockResult.error) {
+      warnings.push(
+        "The Chemicals & Lubricants or Tools & Parts database could not be read, so stock levels are missing. Check the integration has access to both."
+      );
+    }
     if (!baselineId) {
       warnings.push(
         "The baseline entry was not found in the Service Log, so items that have never actually been serviced cannot be labelled."
@@ -379,7 +437,7 @@ export default async function handler(req, res) {
         `Notion returned no Status value on ${blankStatus} of ${tasks.length} tasks. The integration is probably missing access to one of the three databases, so these figures were recalculated rather than read.`
       );
     }
-    const unguided = tasks.filter((t) => !t.guidance);
+    const unguided = tasks.filter((t) => t.tracked && !t.guidance);
     if (unguided.length) {
       warnings.push(
         `No guidance written for ${unguided.length} task${unguided.length === 1 ? "" : "s"}: ${unguided
@@ -420,6 +478,10 @@ export default async function handler(req, res) {
       vehicles,
       tasks,
       history: history.slice(0, 40),
+      shopping: stock
+        .filter((i) => SHOPPING.has(i.status))
+        .map(({ name, kind, status, url, notes }) => ({ name, kind, status, url, notes })),
+      unconfirmedCount: stock.filter((i) => i.status === "Unconfirmed").length,
       rig: RIG,
       excludedCount,
       warnings,
