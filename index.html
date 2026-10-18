@@ -305,10 +305,13 @@ function railHTML(){
 
 function nextHTML(){
   const tasks=trackedTasks();
-  const crit=tasks.filter(t=>t.priority==="Critical"&&(t.status==="OVERDUE"||t.status==="Due Soon"))
+  // A Critical task that has never been done has no due date, but it is the one
+  // kind of untracked task worth naming here.
+  const pressing=t=>t.status==="OVERDUE"||t.status==="Due Soon"||t.status==="Never Logged";
+  const crit=tasks.filter(t=>t.priority==="Critical"&&pressing(t))
     .sort((a,b)=>(a.daysRemaining==null?9999:a.daysRemaining)-(b.daysRemaining==null?9999:b.daysRemaining));
   const other=tasks.filter(t=>t.status==="OVERDUE"&&t.priority!=="Critical");
-  const shop=tasks.filter(t=>t.shop&&(t.status==="OVERDUE"||t.status==="Due Soon"));
+  const shop=tasks.filter(t=>t.shop&&pressing(t));
 
   if(!crit.length&&!other.length&&!shop.length){
     return '<div class="next" style="border-left-color:var(--green)"><h2>Nothing pressing</h2>'+
@@ -316,6 +319,7 @@ function nextHTML(){
   }
 
   const dueTxt=t=>{
+    if(t.status==="Never Logged") return "never done";
     if(t.daysRemaining==null&&t.milesRemaining==null) return "no due figure";
     const bits=[];
     if(t.daysRemaining!=null) bits.push(t.daysRemaining<0?Math.abs(t.daysRemaining)+" days past":"due in "+t.daysRemaining+" days");
