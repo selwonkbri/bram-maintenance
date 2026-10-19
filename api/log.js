@@ -10,6 +10,7 @@
 //     client that skips the prompt still cannot write a guessed mileage.
 
 import { odometerPolicy, odometerRequired, resolveDate } from "../lib/policy.js";
+import { requireKey } from "../lib/auth.js";
 
 const NOTION = "https://api.notion.com/v1";
 const VERSION = "2025-09-03";
@@ -79,6 +80,8 @@ async function logSchema(token) {
 }
 
 export default async function handler(req, res) {
+  if (!requireKey(req, res)) return;
+
   if (req.method !== "POST") {
     res.setHeader("Allow", "POST");
     res.status(405).json({ error: "method_not_allowed", message: "Use POST." });

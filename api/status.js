@@ -7,8 +7,9 @@ import {
   auditLubeRefs,
   GUIDANCE_KEYS,
   RIG,
-} from "./guidance.js";
+} from "../lib/guidance.js";
 import { odometerPolicy, odometerRequired, todayISO } from "../lib/policy.js";
+import { requireKey } from "../lib/auth.js";
 
 const NOTION = "https://api.notion.com/v1";
 const VERSION = "2025-09-03";
@@ -260,6 +261,8 @@ function elapsedFraction(intervalType, months, miles, daysRem, milesRem) {
 // ---------- handler ----------
 
 export default async function handler(req, res) {
+  if (!requireKey(req, res)) return;
+
   const token = process.env.NOTION_TOKEN;
   if (!token) {
     res.status(503).json({
@@ -472,7 +475,6 @@ export default async function handler(req, res) {
       );
     }
 
-    res.setHeader("Cache-Control", "s-maxage=60, stale-while-revalidate=300");
     res.status(200).json({
       generatedAt: new Date().toISOString(),
       vehicles,

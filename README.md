@@ -15,9 +15,16 @@ exposed token would let a stranger create pages in the workspace.
 
 ## Setup
 
-Requires one environment variable in Vercel:
+Requires two environment variables in Vercel, for both Production and Preview:
 
-    NOTION_TOKEN = the internal integration secret
+    NOTION_TOKEN  = the internal integration secret
+    DASHBOARD_KEY = a random key of at least 20 characters
+
+DASHBOARD_KEY locks the API. Without it, `/api/status` would hand anyone the
+tasks, stock and shopping list, and `/api/log` would let anyone write to Notion.
+Both routes check the `X-Dashboard-Key` header before they touch Notion, refuse
+outright if DASHBOARD_KEY is missing or short, and mark every response
+`private, no-store` so no shared cache can replay a keyed answer.
 
 The integration must be connected to all three databases, or to the RV
 Maintenance parent page so they inherit access. If any one of them is missing,
@@ -26,6 +33,33 @@ figures were recalculated rather than read.
 
 Never commit the token. It is covered by .gitignore but the real protection is
 that it only ever lives in Vercel project settings.
+
+## Unlocking a phone or computer
+
+Each browser needs the key once. Generate it in your password manager, save it
+there, then either:
+
+- open `https://brammaintenance.vercel.app/#key=<the key>` once (the part after
+  `#` never reaches the server, and the page clears it from the address bar), or
+- open the dashboard and paste the key when it asks.
+
+The key stays in that browser's local storage. A home-screen copy of the page on
+an iPhone keeps its own storage, so unlock it separately. **Lock**, next to
+Refresh, forgets the key on that device.
+
+To change the key, update DASHBOARD_KEY in Vercel and redeploy. Every device
+then asks for the new one.
+
+Order matters on first setup: add DASHBOARD_KEY in Vercel before this change
+deploys, or the dashboard will say the key isn't set up until you add it and
+redeploy. Nothing is exposed in the meantime; the API stays shut.
+
+## Tests
+
+    npm test
+
+Node's built-in runner, no dependencies. The tests prove both routes refuse
+without the key before any call to Notion, and that responses are never cacheable.
 
 ## Why formula values are read rather than computed
 

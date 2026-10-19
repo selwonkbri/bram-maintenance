@@ -175,7 +175,7 @@ input[type=search]:focus,.chip:focus-visible,.seg button:focus-visible,.reload:f
 .field input:focus{outline:2px solid var(--ink);outline-offset:1px}
 .field .hint{font-family:var(--body);font-size:11.5px;letter-spacing:0;text-transform:none;color:var(--faint);margin-top:5px}
 .field.req label:after{content:" required";color:var(--red);letter-spacing:.08em}
-.modal .err{background:#FBEFEF;border:1px solid #E0BDBD;border-left:3px solid var(--red);border-radius:2px;padding:10px 12px;font-size:13px;color:#6B2020;margin-bottom:13px}
+.modal .err,.state .err{background:#FBEFEF;border:1px solid #E0BDBD;border-left:3px solid var(--red);border-radius:2px;padding:10px 12px;font-size:13px;color:#6B2020;margin-bottom:13px}
 .modal .acts{display:flex;gap:9px;margin-top:18px}
 .modal .acts button{font:inherit;font-size:13.5px;padding:9px 16px;border-radius:2px;cursor:pointer;border:1px solid var(--rule);background:var(--surface);color:var(--mid)}
 .modal .acts .go{background:var(--ink);color:#F3F4F0;border-color:var(--ink);font-weight:500}
@@ -251,6 +251,29 @@ const DONE=new Set();
 // An odometer typed once carries through the rest of the sitting, so a batch of
 // check-offs does not ask for the same number over and over.
 const SESSION_ODO={};
+
+// The API needs the dashboard key (lib/auth.js). A device gets it once, from a
+// link ending in #key=<the key>, or by pasting it when asked, and keeps it in
+// this browser. The part after # never reaches the server, and it is cleared
+// from the address bar as soon as it is read.
+const KEY_STORE="bram.dashboardKey";
+function readKey(){try{return localStorage.getItem(KEY_STORE)||"";}catch(e){return "";}}
+function saveKey(k){try{localStorage.setItem(KEY_STORE,k);}catch(e){/* private browsing: keep it for this visit only */}}
+function forgetKey(){try{localStorage.removeItem(KEY_STORE);}catch(e){}}
+let KEY=readKey();
+(function takeKeyFromLink(){
+  const m=location.hash.match(/^#key=(.+)$/);
+  if(!m) return;
+  try{ KEY=decodeURIComponent(m[1]).trim(); }catch(e){ KEY=m[1].trim(); }
+  if(KEY) saveKey(KEY);
+  history.replaceState(null,"",location.pathname+location.search);
+})();
+function api(path,opts){
+  opts=opts||{};
+  const headers=Object.assign({},opts.headers||{});
+  if(KEY) headers["X-Dashboard-Key"]=KEY;
+  return fetch(path,Object.assign({},opts,{headers:headers}));
+}
 
 // The rig moves across timezones and UTC runs ahead of every US zone in the
 // evening, so the browser's local date is the honest one to send.
@@ -628,12 +651,13 @@ async function submitLog(t, mustAsk){
 
   go.disabled=true; go.textContent="Writing...";
   try{
-    const r=await fetch("/api/log",{
+    const r=await api("/api/log",{
       method:"POST",
       headers:{"Content-Type":"application/json"},
       body:JSON.stringify(payload)
     });
     const j=await r.json();
+    if(r.status===401){ closeModal(); askKey(j.error); return; }
     if(!r.ok){
       showLogErr(j.message||"Notion refused the write.");
       go.disabled=false; go.textContent="Write to Notion";
@@ -657,8 +681,26 @@ function stamp(){
   document.getElementById("asof").innerHTML=
     '<span class="live"><span class="pip"></span>Live from Notion</span> \u00b7 read '+
     t.toLocaleTimeString([], {hour:"numeric",minute:"2-digit"})+' \u00b7 '+trackedTasks().length+
-    ' tracked items <button class="reload" id="rl">Refresh</button>';
+    ' tracked items <button class="reload" id="rl">Refresh</button> <button class="reload" id="lk">Lock</button>';
   const b=document.getElementById("rl"); if(b) b.addEventListener("click",load);
+  const l=document.getElementById("lk"); if(l) l.addEventListener("click",()=>{forgetKey(); KEY=""; DATA=null; askKey(null);});
+}
+
+// Shown when the API answers 401: no key yet, or the saved one was replaced.
+function askKey(reason){
+  if(reason==="key_rejected"){ forgetKey(); KEY=""; }
+  document.getElementById("asof").textContent="Locked";
+  document.getElementById("app").innerHTML=
+    '<div class="state"><h2>This dashboard needs its key</h2>'+
+    (reason==="key_rejected"?'<div class="err">That key was not accepted. It may have been changed.</div>':"")+
+    '<p>Open the key link you saved, or paste the key below. It stays in this browser only.</p>'+
+    '<div class="field"><label for="keyin">Key</label><input id="keyin" type="password" autocomplete="off" autocapitalize="off" spellcheck="false"></div>'+
+    '<p><button class="reload" id="keygo">Unlock</button></p></div>';
+  const input=document.getElementById("keyin");
+  const go=()=>{ const v=(input.value||"").trim(); if(!v) return; KEY=v; saveKey(v); load(); };
+  document.getElementById("keygo").addEventListener("click",go);
+  input.addEventListener("keydown",e=>{ if(e.key==="Enter") go(); });
+  input.focus();
 }
 
 function fail(title, body, hint){
@@ -670,10 +712,15 @@ function fail(title, body, hint){
 
 async function load(){
   try{
-    const r=await fetch("/api/status",{cache:"no-store"});
+    const r=await api("/api/status",{cache:"no-store"});
     const j=await r.json();
+    if(r.status===401){ askKey(j.error); return; }
     if(!r.ok){
-      if(j.error==="no_token"){
+      if(j.error==="no_key_configured"||j.error==="key_too_short"){
+        fail("Dashboard key not set up",
+          j.message,
+          'In Vercel: Settings, Environment Variables, add <code>DASHBOARD_KEY</code> (at least 20 characters), then redeploy.');
+      } else if(j.error==="no_token"){
         fail("Notion token not set yet",
           j.message,
           'In Vercel: Settings, Environment Variables, add <code>NOTION_TOKEN</code> with the integration secret, then redeploy.');
